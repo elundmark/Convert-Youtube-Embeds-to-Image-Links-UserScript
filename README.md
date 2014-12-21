@@ -1,6 +1,10 @@
 # Demo
 
-[http://jsfiddle.net/elundmark/qo7tebr5/2/](http://jsfiddle.net/elundmark/qo7tebr5/2/)
+[http://jsfiddle.net/qo7tebr5/2/](http://jsfiddle.net/qo7tebr5/2/)
+
+# Applies to
+
+* All webpages, except `http*://*.youtube.com/*`.
 
 # About
 
