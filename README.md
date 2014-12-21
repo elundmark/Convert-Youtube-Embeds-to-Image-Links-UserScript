@@ -1,6 +1,7 @@
 # Demo
 
-[http://jsfiddle.net/qo7tebr5/3/](http://jsfiddle.net/qo7tebr5/3/)
+* [http://jsfiddle.net/qo7tebr5/3/](http://jsfiddle.net/qo7tebr5/3/)
+* Due to security on jsfiddle.net you might not be able to click the link, so right-click to open instead...
 
 # Applies to
 
