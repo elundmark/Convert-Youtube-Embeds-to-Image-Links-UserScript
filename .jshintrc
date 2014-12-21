@@ -1,0 +1,35 @@
+{
+  // Details: https://github.com/victorporof/Sublime-JSHint#using-your-own-jshintrc-options
+  // Example: https://github.com/jshint/jshint/blob/master/examples/.jshintrc
+  // Documentation: http://www.jshint.com/docs/
+  "maxerr"   : 250,
+  "laxbreak" : true,
+  "laxcomma" : true,
+  "newcap"   : false,
+  "unused"   : true,
+  "noempty"  : true,
+  "latedef"  : true,
+  "strict"   : true,
+  "jquery"   : true,
+  "node"     : true,
+  "globals"  : {
+    "GM_getMetadata" : false,
+    "unsafeWindow" : false,
+    "GM_info" : false,
+    "GM_addStyle" : false,
+    "GM_log" : false,
+    "GM_getResourceText" : false,
+    "GM_setValue" : false,
+    "GM_getValue" : false,
+    "GM_deleteValue" : false,
+    "GM_openInTab" : false,
+    "GM_getMetadata" : false,
+    "GM_setClipboard" : false,
+    "window"      : false,
+    "document"    : false,
+    "performance" : false,
+    "$"           : false,
+    "jQuery"      : false,
+    "console"     : false
+  }
+}
