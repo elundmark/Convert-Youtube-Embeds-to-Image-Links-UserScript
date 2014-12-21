@@ -2,7 +2,7 @@
 // @name         Convert Youtube Embeds to Image Links
 // @description  Tries to turn embedded Youtube videos into thumbnails - this is based on "Stop Overzealous Embedding" https://openuserjs.org/users/ConnorBehan
 // @namespace	 http://elundmark.se/code/
-// @version      0.1.0
+// @version      0.1.1
 // @date         2014-12-21
 // @autor        Erik Lundmark
 // @contact      mail@elundmark.se
@@ -82,6 +82,7 @@ function init () {
 				span = document.createElement("span");
 			link.href = url;
 			link.title = url;
+			link.target = "_top";
 			link.style.cssText = "padding: 0; position: relative; background: url('https://i3.ytimg.com/vi/"+
 				e.url + "/0.jpg') 0 0 no-repeat; background-size: cover;";
 			link.style.width = e.dims[0];
