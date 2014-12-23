@@ -2,8 +2,8 @@
 // @name         Convert Youtube Embeds to Image Links
 // @description  Tries to turn embedded Youtube videos into thumbnails - this is based on "Stop Overzealous Embedding" https://openuserjs.org/users/ConnorBehan
 // @namespace	 http://elundmark.se/code/
-// @version      0.1.1
-// @date         2014-12-21
+// @version      0.1.2
+// @date         2014-12-23
 // @autor        Erik Lundmark
 // @contact      mail@elundmark.se
 // @license      MIT; http://opensource.org/licenses/MIT
@@ -77,14 +77,14 @@ function init () {
 			return window.getComputedStyle(el, null).getPropertyValue(s);
 		},
 		makeImageAnchor = function (e, isIframe) {
-			var url = "https://www.youtube.com/watch?v=" + e.url,
+			var url = "https://www.youtube.com/watch?v="+e.url,
 				link = document.createElement("a"),
 				span = document.createElement("span");
 			link.href = url;
 			link.title = url;
 			link.target = "_top";
 			link.style.cssText = "padding: 0; position: relative; background: url('https://i3.ytimg.com/vi/"+
-				e.url + "/0.jpg') 0 0 no-repeat; background-size: cover;";
+				e.url+"/0.jpg') 0 0 no-repeat; background-size: 100% 100%;";
 			link.style.width = e.dims[0];
 			link.style.height = e.dims[1];
 			if (isIframe) {
@@ -99,7 +99,7 @@ function init () {
 			}
 			span.style.cssText = "position: absolute; top: 0; bottom: 0; left: 0; right: 0;";
 			span.style.backgroundColor = "rgba(0, 0, 0, 0.08)";
-			span.style.backgroundImage = "url('" +youtubeIcon + "')";
+			span.style.backgroundImage = "url('"+youtubeIcon+"')";
 			span.style.backgroundPosition = "50% 50%";
 			span.style.backgroundRepeat = "no-repeat";
 			span.style.backgroundSize = "64px 64px";
@@ -115,11 +115,11 @@ function init () {
 			risky_node = risky_attributes[k].value;
 			if ((risky_node.indexOf("youtube.com") >= 0) || (risky_node.indexOf("ytimg.com") >= 0) || (risky_node.indexOf("youtube-nocookie.com") >= 0)) {
 				if (risky_node.indexOf("/v/") >= 0) {
-					index = risky_node.indexOf("/v/") + 3;
+					index = risky_node.indexOf("/v/")+3;
 				} else if (risky_node.indexOf("?v=") >= 0) {
-					index = risky_node.indexOf("?v=") + 3;
+					index = risky_node.indexOf("?v=")+3;
 				} else if (risky_node.indexOf("/embed/") >= 0) {
-					index = risky_node.indexOf("/embed/") + 7;
+					index = risky_node.indexOf("/embed/")+7;
 				}
 				if (index > 0) {
 					bad_elements.push({
@@ -132,7 +132,7 @@ function init () {
 						],
 						elFloat: realCss(risky[j], "float"),
 						elDisplay: realCss(risky[j], "display"),
-						url: risky_node.substring(index, index + 11),
+						url: risky_node.substring(index, index+11),
 						dims: [
 							realCss(risky[j], "width") || risky[j].offsetWidth || risky[j].width || "auto",
 							realCss(risky[j], "height") || risky[j].offsetHeight || risky[j].height || "auto"
