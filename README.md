@@ -25,7 +25,7 @@ _Require Secure Updates_ must be disabled to enable auto-updates.
 
 **Icons by** [Pixel Bazaar](https://www.iconfinder.com/zlaten)
 
-# Copyright (c) 2014 Erik Lundmark <mail@elundmark.se>, https://openuserjs.org/scripts/ConnorBehan/
+### Copyright (c) 2014 Erik Lundmark <mail@elundmark.se>, openuserjs.org/scripts/ConnorBehan/
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
