@@ -2,8 +2,8 @@
 // @name         Convert Youtube Embeds to Image Links
 // @description  Tries to turn embedded Youtube videos into thumbnails - this is based on "Stop Overzealous Embedding" https://openuserjs.org/users/ConnorBehan
 // @namespace	 http://elundmark.se/code/
-// @version      0.1.4
-// @date         2014-12-23
+// @version      0.1.5
+// @date         2014-12-24
 // @autor        Erik Lundmark
 // @contact      mail@elundmark.se
 // @license      MIT; http://opensource.org/licenses/MIT
@@ -13,7 +13,10 @@
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAMAAAD04JH5AAAA1VBMVEUAAAAAAAAFAQEGAQEHAQEIAQENAgIPAwMVBAQaBQUdBQUeBgYhBwcfCgosCQkyCgo3Cws8DAxADQ1GDg49FBRSEBBdExNhFBRwFxd5GBhAKCh6GRk4MjKMHR2PHR1DPT2nIyOtJCREQ0O2JiatKSm5JibBKCjIKirNKyvPKyvQKyvZLS3aLS3eLS3fLS3gLS3dLi7eLi7fLi7gLi7eLy/fLy/gLy/eNTXhNja0VFTkSkrkS0u5dHTpbW3pbm7vl5fwl5fks7PEv7/2wcH74+P++Pj///+XlX/1AAAAAXRSTlMAQObYZgAABERJREFUeAHtm2mT20QYhF8BCUeAbDh2uckSYGGJNLFm1IT7nv//kyirFrrsidc91UWRD34+pVIVPf0e8uFR4sR/y4kTJ4Zh+H/9W+z0jn/FSu/6V6z0hp9Y6Q0/sdIbfmKlN/zE+Nd330dGBsY55zmPUwKmksqIsWBl/WMqCSjTmOdNmr95fTAS5LdeHHZ4cI0+ntwfWt6dsEEcARnA+bDPvUv08Ojt4RncubjClryJQ4wAcEU/eXBp+5kAWIIQrFxdDESYgtB/co4byuaQHxd3BtJMwfMzAVBijxkr5/T39oB+KcEcO0wA52/0gPM/tgdY5PlzEy1/kyDvB7ji/PUpqH7y3mPcQH9q90+cQr//3tdoW4AtH9Kv90DdP/qvQXY38ImU/1KsX9gj3gn9V7DqJ4kBOhJcK/ULfs4g8yr39SnY/edrwaj3kT3w+88AIPom+vXzHcG4llE/l2B2q3HuHq4A5E3k9Xw/pohYmo3SExj9ZwtKu9NyTUb9fC207mqzfhQGIPoeePWvMIC6B3XglT92/QygJ6iVEe56/W8DKJtYKyPY9TOAvomVCZz6GWBGX4J6g18/A3QlqP9i+MkSE4hyN1Zi9n9l5ivxsU1kAGLWv3YgAWoPGIB49QOZOyD2oO5h1Q+U6P22VRscPxAZRJkCxcTwcwfUKVRCev1kYgCxB/XZ9PrZARCpB/UQXX4SY+fvTvUgHX5SooAoU6i3IPtJChBpCvVW6O/cAb0H9XY++/EpeigBlccvM8Bt/PmzEUDYw3qcP37wAxD65QD1r1+f+gFavx6Ac/AD8DNyX4Cf/ACtXw7w+y/+CNr+6wGGdy79JWz9agD+iuMHoF8OIPyman4iEvxdPYgi7R+R9HoPUoySn2h6+V2xhNZ/ovrVBJEEvxCg+5sBA0h+Iuu1PZgiSfMnul+7FyJL9RNNr/cgZslPJL3egxJJ8hPdL21ijkWffxvgI+eUZ2WJRfKTnXfdb/vPF5oAs9r/JsBv35snXeyA7meAT78zzplIRHT4GWD44HPjtKoJIM6fAYY3rt2TLgaQ/ITfv7yTriaA2tHadNTaRAboqcY6NWsCFPtKRoIlIjZ6/f7JKeGhlXH+Z5y1gcfXi1GFsT0cgV9/91kbiS1u/UYHGcCo30jAw2vDb21i+ifAl0b/rT2IFeCrl4z6jSnwMb6HZz257QRfYGXiYzy4esWvX96Ds0d7D7SBCVy/ss9nDzkBBuAUhP47m0g/9h9mOzPr5x5I/hJkYQ+s+oUErH8OIUHjdzeR/hQ7gAn6/fom0o/YozCB7ecmCvWTwgSEfn8K9I9LEILUJKDf7gH9JcdBZhQmoN/uAf0lzXGMV20/N5G8+cmUOh/vf4F/s8wZmNbn+zcTFpQ8oqQFqZQyAiWVhKVMI0rO8wjktGwLfc37Dwbh0+knpp/Q34nlJ34zfVy/D/3PJSdOnDhx4m//OuSgMioX6QAAAABJRU5ErkJggg==
 // @include      *
 // @exclude      http*://*.youtube.com/*
-// @grant        none
+// @exclude      http*://*.youtube-nocookie.com/*
+// @exclude      http*://*.ytimg.com/*
+// @exclude      http*://*.youtu.be/*
+// @grant        GM_openInTab
 // ==/UserScript==
 
 /*
@@ -25,10 +28,15 @@
 	--------------------------------------------------------------------------------------------------------
 */
 
+// Un-comment this line if you want to open the videos in the same window
+//var tabLink = function (u) { location.href = u; };
+
 function init () {
 	"use strict";
-	var i, iLen, j, k, index, video_link, elemObj, risky_attributes, risky_node, iframeHtml,
+	var j, k, index, video_link, risky_attributes, risky_node, iframeHtml,
+		openLink = typeof tabLink === "undefined" ? GM_openInTab : tabLink,
 		risky_tags = "object, embed, iframe",
+		ytWatchBaseHref = "https://www.youtube.com/watch?v=",
 		risky = document.querySelectorAll(risky_tags),
 		bad_elements = [],
 		getIframeTmpl = function (th) {
@@ -37,7 +45,8 @@ function init () {
 				"<head>\n"+
 				"<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n"+
 				"<title>Youtube Embed</title>\n"+
-				"<style> * { margin: 0; padding: 0; } html, html body { overflow: hidden; }\n"+
+				"<style> * { margin: 0 !important; padding: 0 !important; }\n"+
+				"html, html body { overflow: hidden !important; }\n"+
 				"a[href*='youtube.com/watch'] > span:hover { background-color: rgba(0, 0, 0, 0.3) !important; }\n</style>"+
 				"</head>\n"+
 				"<body>\n",
@@ -78,32 +87,47 @@ function init () {
 			return window.getComputedStyle(el, null).getPropertyValue(s);
 		},
 		makeImageAnchor = function (e, isIframe) {
-			var url = "https://www.youtube.com/watch?v="+e.url,
+			var url = ytWatchBaseHref+e.url,
 				link = document.createElement("a"),
-				span = document.createElement("span");
+				span = document.createElement("span"),
+				linkCss = "",
+				spanCss = "";
+			e.dims.map(function (item) {
+				if (/^\d+$/.test(item+"")) return item+"px";
+				return item;
+			});
+			e.elMargins.map(function (item) {
+				if (/^\d+$/.test(item+"")) return item+"px";
+				return item;
+			});
 			link.href = url;
 			link.title = url;
 			link.target = "_top";
-			link.style.cssText = "padding: 0; position: relative; background: url('https://i3.ytimg.com/vi/"+
-				e.url+"/0.jpg') 0 0 no-repeat; background-size: 100% 100%;";
-			link.style.width = e.dims[0];
-			link.style.height = e.dims[1];
+			linkCss = "position:relative !important; background:url('https://i3.ytimg.com/vi/"+e.url+"/0.jpg')"+
+				" 0 0 no-repeat !important; "+
+				"background-size:100% 100% !important; "+
+				"width:"+e.dims[0]+" !important; "+
+				"height:"+e.dims[1]+" !important; ";
 			if (isIframe) {
-				link.style.display = "block";
+				linkCss += "display:block !important; ";
 			} else {
-				link.style.display = e.elDisplay === "inline" ? "inline-block" : e.elDisplay;
-				link.style.marginTop = e.elMargins[0];
-				link.style.marginBottom = e.elMargins[1];
-				link.style.marginLeft = e.elMargins[2] !== "0px" ? e.elMargins[2] : "";
-				link.style.marginRight = e.elMargins[3] !== "0px" ? e.elMargins[3] : "";
-				link.style.float = e.elFloat || "none";
+				linkCss += "display:"+(/^(inline|none)$/.test(e.elDisplay) ? "inline-block" : e.elDisplay)+" !important; "+
+					"margin-top:"+e.elMargins[0]+" !important; "+
+					"margin-bottom:"+e.elMargins[1]+" !important; "+
+					(e.elMargins[2] !== "0px" ? "margin-left:"+e.elMargins[2]+" !important; " : "")+
+					(e.elMargins[3] !== "0px" ? "margin-right:"+e.elMargins[3]+" !important; " : "")+
+					"float:"+(e.elFloat||"none")+" !important;";
 			}
-			span.style.cssText = "position: absolute; top: 0; bottom: 0; left: 0; right: 0;";
-			span.style.backgroundColor = "rgba(0, 0, 0, 0.08)";
-			span.style.backgroundImage = "url('"+youtubeIcon+"')";
-			span.style.backgroundPosition = "50% 50%";
-			span.style.backgroundRepeat = "no-repeat";
-			span.style.backgroundSize = "64px 64px";
+			link.style.cssText = linkCss;
+			spanCss = "position: absolute !important; "+
+				"top: 0 !important; bottom: 0 !important; "+
+				"left: 0 !important; right: 0 !important; "+
+				"background-color:rgba(0, 0, 0, 0.08); "+ // leave w/o important rule to enable :hover support
+				"background-image:url('"+youtubeIcon+"') !important; "+
+				"background-position:50% 50% !important; "+
+				"background-repeat:no-repeat !important; "+
+				"background-size:64px 64px !important; ";
+			span.style.cssText = spanCss;
 			span.innerHTML = "&nbsp;";
 			link.appendChild(span);
 			return link;
@@ -135,8 +159,8 @@ function init () {
 						elDisplay: realCss(risky[j], "display"),
 						url: risky_node.substring(index, index+11),
 						dims: [
-							realCss(risky[j], "width") || risky[j].offsetWidth || risky[j].width || "auto",
-							realCss(risky[j], "height") || risky[j].offsetHeight || risky[j].height || "auto"
+							realCss(risky[j], "width") || risky[j].width || risky[j].clientWidth || "auto",
+							realCss(risky[j], "height") || risky[j].height || risky[j].clientHeight || "auto"
 						]
 					});
 				}
@@ -145,20 +169,41 @@ function init () {
 		}
 	}
 
-	iLen = bad_elements.length;
-
-	for (i = 0; i < iLen; i+=1) {
-		elemObj = bad_elements[i];
-		if (elemObj.el.nodeName === "IFRAME") {
-			video_link = makeImageAnchor(elemObj, true);
+	bad_elements.forEach(function (o) {
+		var linkTabHandler = function (event) {
+			event.preventDefault();
+			var el = event.currentTarget;
+			if (el.nodeName === "A") {
+				el = el.querySelector("span");
+			}
+			// alias for GM_openInTab
+			openLink(ytWatchBaseHref+o.url);
+			el.style.setProperty("background-color", "rgba(0, 0, 0, 0.6)", "important");
+			return false;
+		};
+		if (o.el.nodeName === "IFRAME") {
+			video_link = makeImageAnchor(o, true);
+			// Stop the iframe anchor link, and set a click event w/ GM_openInTab on the iframe later
 			iframeHtml = getIframeTmpl(video_link.outerHTML).join("");
-			elemObj.el.src = "data:text/html,base64,"+window.btoa(iframeHtml);
-			elemObj.el.srcdoc = iframeHtml;
+			// Remove any safeguards so I can access the iframe later
+			o.el.removeAttribute("sandbox");
+			o.el.addEventListener("load", function () {
+				if (o.el.contentDocument) {
+					o.el.contentDocument.querySelectorAll("a")[0].onclick = linkTabHandler;
+				} else if (o.el.contentWindow) {
+					(o.el.contentWindow.document||o.el.document).querySelectorAll("a")[0].onclick = linkTabHandler;
+				}
+			});
+			o.el.src = "data:text/html,base64,"+window.btoa(iframeHtml);
+			// To prevent browser caching (ie ff) I'm settings both src & srcdoc
+			o.el.srcdoc = iframeHtml;
 		} else {
-			video_link = makeImageAnchor(elemObj);
-			elemObj.el.style.display = "none";
-			elemObj.el.parentNode.replaceChild(video_link, elemObj.el);
+			video_link = makeImageAnchor(o);
+			// Stop the default anchor link and set a click event w/ GM_openInTab
+			video_link.onclick = linkTabHandler;
+			o.el.style.display = "none";
+			o.el.parentNode.replaceChild(video_link, o.el);
 		}
-	}
+	});
 }
 init();

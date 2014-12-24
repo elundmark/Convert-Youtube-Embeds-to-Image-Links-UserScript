@@ -1,16 +1,29 @@
+# Install
+
+Can be installed from these repositories:
+* [https://openuserjs.org/scripts/elundmark/Convert_Youtube_Embeds_to_Image_Links](https://openuserjs.org/scripts/elundmark/Convert_Youtube_Embeds_to_Image_Links)
+* [https://monkeyguts.com/code.php?id=681](https://monkeyguts.com/code.php?id=681)
+* [https://greasyfork.org/en/scripts/7096-convert-youtube-embeds-to-image-links](https://greasyfork.org/en/scripts/7096-convert-youtube-embeds-to-image-links)
+
 # Demo
 
 * [http://elundmark.se/_files/js/convert_youtube_embeds_to_image_links/cye2il-demo/](http://elundmark.se/_files/js/convert_youtube_embeds_to_image_links/cye2il-demo/)
 
 # Applies to
 
-* All webpages, except `http*://*.youtube.com/*`.
+* All webpages, except:
+  - `http*://*.youtube.com/*`
+  - `http*://*.youtube.com/*`
+  - `http*://*.youtube-nocookie.com/*`
+  - `http*://*.ytimg.com/*`
+  - `http*://*.youtu.be/*`
 
 # About
 
 * Replaces _all_ embedded Youtube videos with a simple thumbnail and link.
 * This userscript is based on [Stop Overzealous Embedding](https://openuserjs.org/scripts/ConnorBehan/Stop_Overzealous_Embedding) but extends it's functionality to instead change the _content_ of the iframe to a thumbnail and a link, which looks just like the video itself. This means it will keep the same CSS styling, provided it's an `iframe` element and not an `object` or `embed`.
   - If it is an `object` or `embed` tag, they are replaced with a linked image, and _tries_ to look like the video.
+* All videos open in a new tab.
 
 ## Requires HTML5 support:
 
