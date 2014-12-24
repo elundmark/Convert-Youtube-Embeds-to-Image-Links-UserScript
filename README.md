@@ -13,7 +13,6 @@ Can be installed from these repositories:
 
 * All webpages, except:
   - `http*://*.youtube.com/*`
-  - `http*://*.youtube.com/*`
   - `http*://*.youtube-nocookie.com/*`
   - `http*://*.ytimg.com/*`
   - `http*://*.youtu.be/*`
