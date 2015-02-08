@@ -2,7 +2,7 @@
 // @name         Convert Youtube Embeds to Image Links
 // @description  Tries to turn embedded Youtube videos into thumbnails - this is based on "Stop Overzealous Embedding" https://openuserjs.org/users/ConnorBehan
 // @namespace	 http://elundmark.se/code/
-// @version      0.1.7
+// @version      0.1.8
 // @date         2015-02-08
 // @autor        Erik Lundmark
 // @contact      mail@elundmark.se
@@ -177,7 +177,10 @@
 				}
 			}
 			bad_elements.forEach(function (o) {
-				var linkTabHandler = function (event) {
+				var linkTabHandler;
+				if (o.el.dataset.cye2il === "loaded") return;
+				o.el.setAttribute("data-cye2il", "loaded");
+				linkTabHandler = function (event) {
 					event.preventDefault();
 					var el = event.currentTarget;
 					if (el.nodeName === "A") {
@@ -221,13 +224,19 @@
 			if (mutation.addedNodes && mutation.addedNodes.length) {
 				Array.prototype.slice.call(mutation.addedNodes, 0).forEach(function (node) {
 					if (node.nodeName && risky_tags.indexOf(node.nodeName.toLowerCase()) !== -1) {
-						init(node);
+						setTimeout(function () {
+							// Allow other script to (maybe) act first, like fluidvids or fitvids
+							init(node);
+						}, 200);
 					}
 				});
 			}
 		});
 	});
-	init();
+	setTimeout(function () {
+		// Allow other script to (maybe) act first, like fluidvids or fitvids
+		init();
+	}, 200);
 	observer.observe(document.body, {
 		childList: true,
 		subtree: true,

@@ -43,31 +43,32 @@
 <body>
 <section>
 	<h1><a href="https://github.com/elundmark/Convert-Youtube-Embeds-to-Image-Links-UserScript/">Demo of &quot;Convert Youtube Embeds to Image Links&quot;</a></h1>
-	<iframe width="320" height="180" src="//www.youtube.com/embed/fKX_eEtrrHI" frameborder="0" allowfullscreen></iframe>
+	<!-- Standard embed -->
+	<iframe width="320" height="180" src="//www.youtube.com/embed/Ax07muLvG7c" frameborder="0" allowfullscreen></iframe>
+	<!-- Old-school embed -->
+	<object width="320" height="180">
+		<param name="movie" value="https://www.youtube.com/v/_V_6yIvmzgw"></param>
+		<param name="allowFullScreen" value="true"></param>
+		<param name="allowscriptaccess" value="always"></param>
+		<embed src="https://www.youtube.com/v/_V_6yIvmzgw" type="application/x-shockwave-flash" width="320" height="180" allowscriptaccess="always" allowfullscreen="true"></embed>
+	</object>
 	<!-- Dynamically injected embed -->
-	<div class="video-container" data-video-id="PZinsSmIGWE" style="width:320px;height:180px;">Loading video...</div>
-	<div class="video-container" data-video-id="hqKafI7Amd8" style="width:320px;height:180px;">Loading video...</div>
+	<div class="video-container" data-video-id="2RZ5xZ1kUlc" style="width:320px;height:180px;">Loading video...</div>
+	<div class="video-container" data-video-id="VVnOgS_48dQ" style="width:320px;height:180px;">Loading video...</div>
 	<script type="text/javascript">
 		"use strict";
 		setTimeout(function () {
 			Array.prototype.slice.call(document.querySelectorAll(".video-container"), 0).forEach(function (node) {
-				var videoIframe = document.createElement("IFRAME");
-				videoIframe.setAttribute("src", "//www.youtube.com/embed/"+node.dataset.videoId);
-				videoIframe.setAttribute("width", "320");
-				videoIframe.setAttribute("height", "180");
-				videoIframe.setAttribute("frameborder", "0");
-				videoIframe.setAttribute("allowfullscreen", "allowfullscreen");
-				node.parentNode.replaceChild(videoIframe, node);
+				var vf = document.createElement("IFRAME");
+				vf.setAttribute("src", "//www.youtube.com/embed/"+node.dataset.videoId);
+				vf.setAttribute("width", "320");
+				vf.setAttribute("height", "180");
+				vf.setAttribute("frameborder", "0");
+				vf.setAttribute("allowfullscreen", "allowfullscreen");
+				node.parentNode.replaceChild(vf, node);
 			});
 		}, 1000);
 	</script>
-	<!-- Old-school embed -->
-	<object width="320" height="180">
-		<param name="movie" value="https://www.youtube.com/v/UOUYPnpJsK0"></param>
-		<param name="allowFullScreen" value="true"></param>
-		<param name="allowscriptaccess" value="always"></param>
-		<embed src="https://www.youtube.com/v/UOUYPnpJsK0" type="application/x-shockwave-flash" width="320" height="180" allowscriptaccess="always" allowfullscreen="true"></embed>
-	</object>
 </section>
 <aside>
 	These four videos are loaded in the following order: <b>1.</b> Normal <code>&lt;iframe&gt;</code>, <b>2 - 3.</b> Dynamically injected after a delay, <b>4.</b> An oldschool <code>&lt;object&gt;</code>.<br/>
@@ -94,7 +95,7 @@ window.addEventListener("load", function () {
 // @name         Convert Youtube Embeds to Image Links
 // @description  Tries to turn embedded Youtube videos into thumbnails - this is based on "Stop Overzealous Embedding" https://openuserjs.org/users/ConnorBehan
 // @namespace	 http://elundmark.se/code/
-// @version      0.1.7
+// @version      0.1.8
 // @date         2015-02-08
 // @autor        Erik Lundmark
 // @contact      mail@elundmark.se
@@ -269,7 +270,10 @@ window.addEventListener("load", function () {
 				}
 			}
 			bad_elements.forEach(function (o) {
-				var linkTabHandler = function (event) {
+				var linkTabHandler;
+				if (o.el.dataset.cye2il === "loaded") return;
+				o.el.setAttribute("data-cye2il", "loaded");
+				linkTabHandler = function (event) {
 					event.preventDefault();
 					var el = event.currentTarget;
 					if (el.nodeName === "A") {
@@ -313,13 +317,19 @@ window.addEventListener("load", function () {
 			if (mutation.addedNodes && mutation.addedNodes.length) {
 				Array.prototype.slice.call(mutation.addedNodes, 0).forEach(function (node) {
 					if (node.nodeName && risky_tags.indexOf(node.nodeName.toLowerCase()) !== -1) {
-						init(node);
+						setTimeout(function () {
+							// Allow other script to (maybe) act first, like fluidvids or fitvids
+							init(node);
+						}, 200);
 					}
 				});
 			}
 		});
 	});
-	init();
+	setTimeout(function () {
+		// Allow other script to (maybe) act first, like fluidvids or fitvids
+		init();
+	}, 200);
 	observer.observe(document.body, {
 		childList: true,
 		subtree: true,
