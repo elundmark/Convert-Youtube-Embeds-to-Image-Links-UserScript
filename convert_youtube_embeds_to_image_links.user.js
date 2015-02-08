@@ -2,8 +2,8 @@
 // @name         Convert Youtube Embeds to Image Links
 // @description  Tries to turn embedded Youtube videos into thumbnails - this is based on "Stop Overzealous Embedding" https://openuserjs.org/users/ConnorBehan
 // @namespace	 http://elundmark.se/code/
-// @version      0.1.5
-// @date         2014-12-24
+// @version      0.1.6
+// @date         2015-02-08
 // @autor        Erik Lundmark
 // @contact      mail@elundmark.se
 // @license      MIT; http://opensource.org/licenses/MIT
@@ -13,9 +13,12 @@
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAMAAAD04JH5AAAA1VBMVEUAAAAAAAAFAQEGAQEHAQEIAQENAgIPAwMVBAQaBQUdBQUeBgYhBwcfCgosCQkyCgo3Cws8DAxADQ1GDg49FBRSEBBdExNhFBRwFxd5GBhAKCh6GRk4MjKMHR2PHR1DPT2nIyOtJCREQ0O2JiatKSm5JibBKCjIKirNKyvPKyvQKyvZLS3aLS3eLS3fLS3gLS3dLi7eLi7fLi7gLi7eLy/fLy/gLy/eNTXhNja0VFTkSkrkS0u5dHTpbW3pbm7vl5fwl5fks7PEv7/2wcH74+P++Pj///+XlX/1AAAAAXRSTlMAQObYZgAABERJREFUeAHtm2mT20QYhF8BCUeAbDh2uckSYGGJNLFm1IT7nv//kyirFrrsidc91UWRD34+pVIVPf0e8uFR4sR/y4kTJ4Zh+H/9W+z0jn/FSu/6V6z0hp9Y6Q0/sdIbfmKlN/zE+Nd330dGBsY55zmPUwKmksqIsWBl/WMqCSjTmOdNmr95fTAS5LdeHHZ4cI0+ntwfWt6dsEEcARnA+bDPvUv08Ojt4RncubjClryJQ4wAcEU/eXBp+5kAWIIQrFxdDESYgtB/co4byuaQHxd3BtJMwfMzAVBijxkr5/T39oB+KcEcO0wA52/0gPM/tgdY5PlzEy1/kyDvB7ji/PUpqH7y3mPcQH9q90+cQr//3tdoW4AtH9Kv90DdP/qvQXY38ImU/1KsX9gj3gn9V7DqJ4kBOhJcK/ULfs4g8yr39SnY/edrwaj3kT3w+88AIPom+vXzHcG4llE/l2B2q3HuHq4A5E3k9Xw/pohYmo3SExj9ZwtKu9NyTUb9fC207mqzfhQGIPoeePWvMIC6B3XglT92/QygJ6iVEe56/W8DKJtYKyPY9TOAvomVCZz6GWBGX4J6g18/A3QlqP9i+MkSE4hyN1Zi9n9l5ivxsU1kAGLWv3YgAWoPGIB49QOZOyD2oO5h1Q+U6P22VRscPxAZRJkCxcTwcwfUKVRCev1kYgCxB/XZ9PrZARCpB/UQXX4SY+fvTvUgHX5SooAoU6i3IPtJChBpCvVW6O/cAb0H9XY++/EpeigBlccvM8Bt/PmzEUDYw3qcP37wAxD65QD1r1+f+gFavx6Ac/AD8DNyX4Cf/ACtXw7w+y/+CNr+6wGGdy79JWz9agD+iuMHoF8OIPyman4iEvxdPYgi7R+R9HoPUoySn2h6+V2xhNZ/ovrVBJEEvxCg+5sBA0h+Iuu1PZgiSfMnul+7FyJL9RNNr/cgZslPJL3egxJJ8hPdL21ijkWffxvgI+eUZ2WJRfKTnXfdb/vPF5oAs9r/JsBv35snXeyA7meAT78zzplIRHT4GWD44HPjtKoJIM6fAYY3rt2TLgaQ/ITfv7yTriaA2tHadNTaRAboqcY6NWsCFPtKRoIlIjZ6/f7JKeGhlXH+Z5y1gcfXi1GFsT0cgV9/91kbiS1u/UYHGcCo30jAw2vDb21i+ifAl0b/rT2IFeCrl4z6jSnwMb6HZz257QRfYGXiYzy4esWvX96Ds0d7D7SBCVy/ss9nDzkBBuAUhP47m0g/9h9mOzPr5x5I/hJkYQ+s+oUErH8OIUHjdzeR/hQ7gAn6/fom0o/YozCB7ecmCvWTwgSEfn8K9I9LEILUJKDf7gH9JcdBZhQmoN/uAf0lzXGMV20/N5G8+cmUOh/vf4F/s8wZmNbn+zcTFpQ8oqQFqZQyAiWVhKVMI0rO8wjktGwLfc37Dwbh0+knpp/Q34nlJ34zfVy/D/3PJSdOnDhx4m//OuSgMioX6QAAAABJRU5ErkJggg==
 // @include      *
 // @exclude      http*://*.youtube.com/*
+// @exclude      http*://youtube.com/*
 // @exclude      http*://*.youtube-nocookie.com/*
-// @exclude      http*://*.ytimg.com/*
+// @exclude      http*://youtube-nocookie.com/*
 // @exclude      http*://*.youtu.be/*
+// @exclude      http*://youtu.be/*
+// @exclude      http*://*.ytimg.com/*
 // @grant        GM_openInTab
 // ==/UserScript==
 
@@ -31,14 +34,15 @@
 // Un-comment this line if you want to open the videos in the same window
 //var tabLink = function (u) { location.href = u; };
 
-function init () {
+(function () {
 	"use strict";
-	var j, k, index, video_link, risky_attributes, risky_node, iframeHtml,
+	var video_link,
+		iframeHtml,
 		openLink = typeof tabLink === "undefined" ? GM_openInTab : tabLink,
-		risky_tags = "object, embed, iframe",
 		ytWatchBaseHref = "https://www.youtube.com/watch?v=",
-		risky = document.querySelectorAll(risky_tags),
-		bad_elements = [],
+		risky_tags = ["object", "embed", "iframe"],
+		MutationObserver,
+		observer,
 		getIframeTmpl = function (th) {
 			return [
 				"<!DOCTYPE html>\n"+
@@ -131,79 +135,104 @@ function init () {
 			span.innerHTML = "&nbsp;";
 			link.appendChild(span);
 			return link;
-		};
-
-	for (j = 0; j < risky.length; j+=1) {
-		index = 0;
-		risky_attributes = risky[j].attributes;
-		for (k = 0; k < risky_attributes.length; k+=1) {
-			risky_node = risky_attributes[k].value;
-			if ((risky_node.indexOf("youtube.com") >= 0) || (risky_node.indexOf("ytimg.com") >= 0) || (risky_node.indexOf("youtube-nocookie.com") >= 0)) {
-				if (risky_node.indexOf("/v/") >= 0) {
-					index = risky_node.indexOf("/v/")+3;
-				} else if (risky_node.indexOf("?v=") >= 0) {
-					index = risky_node.indexOf("?v=")+3;
-				} else if (risky_node.indexOf("/embed/") >= 0) {
-					index = risky_node.indexOf("/embed/")+7;
+		},
+		init = function (dynamicNode) {
+			var index,
+				risky_node,
+				risky_attributes,
+				bad_elements = [],
+				risky = !dynamicNode ? document.querySelectorAll(risky_tags.join(", ")) : [dynamicNode];
+			for (var j = 0, jLen = risky.length; j < jLen; j+=1) {
+				index = 0;
+				risky_attributes = risky[j].attributes;
+				for (var k = 0, kLen = risky_attributes.length; k < kLen; k+=1) {
+					risky_node = risky_attributes[k].value;
+					if ((risky_node.indexOf("youtube.com") >= 0) || (risky_node.indexOf("ytimg.com") >= 0) || (risky_node.indexOf("youtube-nocookie.com") >= 0)) {
+						if (risky_node.indexOf("/v/") >= 0) {
+							index = risky_node.indexOf("/v/")+3;
+						} else if (risky_node.indexOf("?v=") >= 0) {
+							index = risky_node.indexOf("?v=")+3;
+						} else if (risky_node.indexOf("/embed/") >= 0) {
+							index = risky_node.indexOf("/embed/")+7;
+						}
+						if (index > 0) {
+							bad_elements.push({
+								el: risky[j],
+								elMargins: [
+									realCss(risky[j], "margin-top"),
+									realCss(risky[j], "margin-bottom"),
+									realCss(risky[j], "margin-left"),
+									realCss(risky[j], "margin-right")
+								],
+								elFloat: realCss(risky[j], "float"),
+								elDisplay: realCss(risky[j], "display"),
+								url: risky_node.substring(index, index+11),
+								dims: [
+									realCss(risky[j], "width") || risky[j].width || risky[j].clientWidth || "auto",
+									realCss(risky[j], "height") || risky[j].height || risky[j].clientHeight || "auto"
+								]
+							});
+						}
+						break;
+					}
 				}
-				if (index > 0) {
-					bad_elements.push({
-						el: risky[j],
-						elMargins: [
-							realCss(risky[j], "margin-top"),
-							realCss(risky[j], "margin-bottom"),
-							realCss(risky[j], "margin-left"),
-							realCss(risky[j], "margin-right")
-						],
-						elFloat: realCss(risky[j], "float"),
-						elDisplay: realCss(risky[j], "display"),
-						url: risky_node.substring(index, index+11),
-						dims: [
-							realCss(risky[j], "width") || risky[j].width || risky[j].clientWidth || "auto",
-							realCss(risky[j], "height") || risky[j].height || risky[j].clientHeight || "auto"
-						]
+			}
+			bad_elements.forEach(function (o) {
+				var linkTabHandler = function (event) {
+					event.preventDefault();
+					var el = event.currentTarget;
+					if (el.nodeName === "A") {
+						el = el.querySelector("span");
+					}
+					// alias for GM_openInTab
+					openLink(ytWatchBaseHref+o.url);
+					el.style.setProperty("background-color", "rgba(0, 0, 0, 0.6)", "important");
+					return false;
+				};
+				if (o.el.nodeName === "IFRAME") {
+					video_link = makeImageAnchor(o, true);
+					// Stop the iframe anchor link, and set a click event w/ GM_openInTab on the iframe later
+					iframeHtml = getIframeTmpl(video_link.outerHTML).join("");
+					// Remove any safeguards so I can access the iframe later
+					o.el.removeAttribute("sandbox");
+					o.el.addEventListener("load", function () {
+						if (o.el.contentDocument) {
+							o.el.contentDocument.querySelectorAll("a")[0].onclick = linkTabHandler;
+						} else if (o.el.contentWindow) {
+							(o.el.contentWindow.document||o.el.document).querySelectorAll("a")[0].onclick = linkTabHandler;
+						}
 					});
-				}
-				break;
-			}
-		}
-	}
-
-	bad_elements.forEach(function (o) {
-		var linkTabHandler = function (event) {
-			event.preventDefault();
-			var el = event.currentTarget;
-			if (el.nodeName === "A") {
-				el = el.querySelector("span");
-			}
-			// alias for GM_openInTab
-			openLink(ytWatchBaseHref+o.url);
-			el.style.setProperty("background-color", "rgba(0, 0, 0, 0.6)", "important");
-			return false;
-		};
-		if (o.el.nodeName === "IFRAME") {
-			video_link = makeImageAnchor(o, true);
-			// Stop the iframe anchor link, and set a click event w/ GM_openInTab on the iframe later
-			iframeHtml = getIframeTmpl(video_link.outerHTML).join("");
-			// Remove any safeguards so I can access the iframe later
-			o.el.removeAttribute("sandbox");
-			o.el.addEventListener("load", function () {
-				if (o.el.contentDocument) {
-					o.el.contentDocument.querySelectorAll("a")[0].onclick = linkTabHandler;
-				} else if (o.el.contentWindow) {
-					(o.el.contentWindow.document||o.el.document).querySelectorAll("a")[0].onclick = linkTabHandler;
+					o.el.src = "data:text/html,base64,"+window.btoa(iframeHtml);
+					// To prevent browser caching (ie ff) I'm settings both src & srcdoc
+					o.el.srcdoc = iframeHtml;
+				} else {
+					video_link = makeImageAnchor(o);
+					// Stop the default anchor link and set a click event w/ GM_openInTab
+					video_link.onclick = linkTabHandler;
+					o.el.style.display = "none";
+					o.el.parentNode.replaceChild(video_link, o.el);
 				}
 			});
-			o.el.src = "data:text/html,base64,"+window.btoa(iframeHtml);
-			// To prevent browser caching (ie ff) I'm settings both src & srcdoc
-			o.el.srcdoc = iframeHtml;
-		} else {
-			video_link = makeImageAnchor(o);
-			// Stop the default anchor link and set a click event w/ GM_openInTab
-			video_link.onclick = linkTabHandler;
-			o.el.style.display = "none";
-			o.el.parentNode.replaceChild(video_link, o.el);
-		}
+		};
+	// http://michalbe.blogspot.com/2013/04/javascript-less-known-parts-dom.html
+	// https://developer.mozilla.org/en/docs/Web/API/MutationObserver
+	MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver;
+	observer = new MutationObserver(function(mutations) {
+		mutations.forEach(function(mutation) {
+			if (mutation.addedNodes && mutation.addedNodes.length) {
+				Array.prototype.slice.call(mutation.addedNodes, 0).forEach(function (node) {
+					if (node.nodeName && risky_tags.indexOf(node.nodeName.toLowerCase()) !== -1) {
+						init(node);
+					}
+				});
+			}
+		});
 	});
-}
-init();
+	init();
+	observer.observe(document.body, {
+		childList: true,
+		subtree: true,
+		attributes: false,
+		characterData: false
+	});
+}());
