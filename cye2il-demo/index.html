@@ -70,15 +70,16 @@
 	</object>
 </section>
 <aside>
-	These four videos are loaded in the following order: <b>1.</b> Normal <code>&lt;iframe&gt;</code>, <b>2 - 3.</b> Dynamically injected after a delay, <b>4.</b> An oldschool <code>&lt;object&gt;</code>.
+	These four videos are loaded in the following order: <b>1.</b> Normal <code>&lt;iframe&gt;</code>, <b>2 - 3.</b> Dynamically injected after a delay, <b>4.</b> An oldschool <code>&lt;object&gt;</code>.<br/>
+	In this demo all videolinks will open in the same window, but the actual userscript will open the them in a new tab. If the prefer it to behave like in this demo you need to edit line <b>35</b>.<br>
+	Also notice that this demo fires the javascript <code>onload</code> so you have time to see what happens. The actual userscript works much faster.
 </aside>
 <footer>
 	<pre class="html_source">&lt;!-- HTML Source --&gt;
 
 <code id="hc"></code>
 	</pre>
-	<pre>/* UserScript Source
-In this demo all videos open in the same window, but the actual userscript will open the them in a new tab */
+	<pre>/* UserScript Source */
 
 <code id="sc"></code>
 	</pre>
@@ -93,7 +94,7 @@ window.addEventListener("load", function () {
 // @name         Convert Youtube Embeds to Image Links
 // @description  Tries to turn embedded Youtube videos into thumbnails - this is based on "Stop Overzealous Embedding" https://openuserjs.org/users/ConnorBehan
 // @namespace	 http://elundmark.se/code/
-// @version      0.1.6
+// @version      0.1.7
 // @date         2015-02-08
 // @autor        Erik Lundmark
 // @contact      mail@elundmark.se
