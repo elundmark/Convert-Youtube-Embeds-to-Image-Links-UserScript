@@ -10,7 +10,11 @@
 		body {
 			padding: 10px; margin: 0; }
 		h1 {
-			font-size: 24px; }
+			margin-bottom: 36px; }
+		h1, h1 a {
+			font-size: 36px;
+			color: red;
+			text-decoration: none; }
 		iframe, object, .video-container {
 			margin: 0 10px 10px 0;
 			display: inline-block;
@@ -18,6 +22,8 @@
 		.video-container {
 			background-color: gray;
 			padding: 0;
+			line-height: 3;
+			text-indent: 10px;
 			font-size: 18px; }
 		footer {
 			clear: both; }
@@ -36,7 +42,7 @@
 </head>
 <body>
 <section>
-	<h1><a href="https://github.com/elundmark/Convert-Youtube-Embeds-to-Image-Links-UserScript/">Convert Youtube Embeds to Image Links</a> Demo</h1>
+	<h1><a href="https://github.com/elundmark/Convert-Youtube-Embeds-to-Image-Links-UserScript/">Demo of &quot;Convert Youtube Embeds to Image Links&quot;</a></h1>
 	<iframe width="320" height="180" src="//www.youtube.com/embed/fKX_eEtrrHI" frameborder="0" allowfullscreen></iframe>
 	<!-- Dynamically injected embed -->
 	<div class="video-container" data-video-id="PZinsSmIGWE" style="width:320px;height:180px;">Loading video...</div>
@@ -193,8 +199,7 @@ window.addEventListener("load", function () {
 			link.title = url;
 			link.target = "_top";
 			linkCss = "position:relative !important; background:url('https://i3.ytimg.com/vi/"+e.url+"/0.jpg')"+
-				" 0 0 no-repeat !important; "+
-				"background-size:100% 100% !important; "+
+				" no-repeat scroll 50% 50% / 133% auto transparent !important; "+
 				"width:"+e.dims[0]+" !important; "+
 				"height:"+e.dims[1]+" !important; ";
 			if (isIframe) {
