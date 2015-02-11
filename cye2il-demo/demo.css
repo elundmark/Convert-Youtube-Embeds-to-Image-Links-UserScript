@@ -1,0 +1,73 @@
+html, html body {
+	font-family: "Ubuntu Light", Ubuntu, sans-serif; }
+body {
+	padding: 0 20px;
+	margin: 0; }
+.narrow {
+	max-width: 800px;
+	margin: 0 auto; }
+.videos {
+	text-align: center; }
+code, pre {
+	font-family: "Ubuntu Mono", "Inconsolata", "Consolas", "Menlo", "Courier New", monospace; }
+h1 {
+	margin-bottom: 36px;
+	text-align: center; }
+h1, h1 a {
+	font-size: 36px;
+	color: red;
+	text-decoration: none;
+	text-shadow: -1px 1px 0 #333, 1px -1px 0 #333, -1px -1px 0 #333, 1px 1px 0 #333 }
+h1 a span {
+	text-decoration: underline; }
+h3 {
+	font-family: "Ubuntu Medium", "Ubuntu", sans-serif;
+	font-weight: 600; }
+section, #object_examples {
+	overflow: hidden; }
+aside, footer {
+	margin-bottom: 20px; }
+li, button {
+	margin-bottom: 10px; }
+ul {
+	padding-left: 0;
+	list-style: none; }
+ol {
+	margin-top: 10px; }
+iframe, object, embed, .video-container {
+	margin: 0 20px 20px 0;
+	display: inline-block;
+	max-width: 300px !important;
+	max-height: 168px !important;
+	box-shadow: 1px 0 4px #999;
+	border-radius: 3px; }
+.videos > :last-child, .videos > footer > :last-child {
+	margin-right: 0; }
+object embed {
+	margin: 0;
+	display: none;
+	border: 0; }
+.video-container {
+	width: 300px;
+	height: 168px;
+	background: #FFF url('data:image/gif;base64,R0lGODlhEAAQAPIAAP///wAAAMLCwkJCQgAAAGJiYoKCgpKSkiH+GkNyZWF0ZWQgd2l0aCBhamF4bG9hZC5pbmZvACH5BAAKAAAAIf8LTkVUU0NBUEUyLjADAQAAACwAAAAAEAAQAAADMwi63P4wyklrE2MIOggZnAdOmGYJRbExwroUmcG2LmDEwnHQLVsYOd2mBzkYDAdKa+dIAAAh+QQACgABACwAAAAAEAAQAAADNAi63P5OjCEgG4QMu7DmikRxQlFUYDEZIGBMRVsaqHwctXXf7WEYB4Ag1xjihkMZsiUkKhIAIfkEAAoAAgAsAAAAABAAEAAAAzYIujIjK8pByJDMlFYvBoVjHA70GU7xSUJhmKtwHPAKzLO9HMaoKwJZ7Rf8AYPDDzKpZBqfvwQAIfkEAAoAAwAsAAAAABAAEAAAAzMIumIlK8oyhpHsnFZfhYumCYUhDAQxRIdhHBGqRoKw0R8DYlJd8z0fMDgsGo/IpHI5TAAAIfkEAAoABAAsAAAAABAAEAAAAzIIunInK0rnZBTwGPNMgQwmdsNgXGJUlIWEuR5oWUIpz8pAEAMe6TwfwyYsGo/IpFKSAAAh+QQACgAFACwAAAAAEAAQAAADMwi6IMKQORfjdOe82p4wGccc4CEuQradylesojEMBgsUc2G7sDX3lQGBMLAJibufbSlKAAAh+QQACgAGACwAAAAAEAAQAAADMgi63P7wCRHZnFVdmgHu2nFwlWCI3WGc3TSWhUFGxTAUkGCbtgENBMJAEJsxgMLWzpEAACH5BAAKAAcALAAAAAAQABAAAAMyCLrc/jDKSatlQtScKdceCAjDII7HcQ4EMTCpyrCuUBjCYRgHVtqlAiB1YhiCnlsRkAAAOwAAAAAAAAAAAA==') no-repeat 50% 50%;
+	padding: 0;
+	line-height: 3;
+	text-indent: 20px;
+	font-size: 18px; }
+footer {
+	clear: both; }
+footer:empty {
+	display: none; }
+pre {
+	margin: 0; }
+pre code {
+	max-height: 500px; }
+pre.loaded {
+	margin: 10px 0;
+	text-align: left;
+	color: #111;
+	background-color: #DDD;
+	padding: 10px;
+	white-space: pre;
+	overflow: auto; }

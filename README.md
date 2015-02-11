@@ -1,4 +1,11 @@
-# Install
+# Use as standalone on your own site
+
+* The `user.js` file can be can be added and used on any page as a standalone way of converting your Youtube embeds on your blog or whatever, as long as you un-comment line **35**, or add this to the top of the script.
+  ```js
+  var tabLink = function (u) { location.href = u; };
+  ```
+
+# Install as UserScript
 
 Can be installed from these repositories:
 * [https://openuserjs.org/scripts/elundmark/Convert_Youtube_Embeds_to_Image_Links](https://openuserjs.org/scripts/elundmark/Convert_Youtube_Embeds_to_Image_Links)
@@ -8,6 +15,8 @@ Can be installed from these repositories:
 # Demo
 
 * [http://elundmark.se/_files/js/convert_youtube_embeds_to_image_links/cye2il-demo/](http://elundmark.se/_files/js/convert_youtube_embeds_to_image_links/cye2il-demo/)
+
+![screenshot of demo](http://elundmark.se/_files/js/convert_youtube_embeds_to_image_links/screenshot.jpg "Screenshot of the demo page")
 
 # Applies to
 

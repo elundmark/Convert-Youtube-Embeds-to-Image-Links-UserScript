@@ -12,13 +12,9 @@
 // @downloadURL  http://elundmark.se/_files/js/convert_youtube_embeds_to_image_links/convert_youtube_embeds_to_image_links.user.js
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAMAAAD04JH5AAAA1VBMVEUAAAAAAAAFAQEGAQEHAQEIAQENAgIPAwMVBAQaBQUdBQUeBgYhBwcfCgosCQkyCgo3Cws8DAxADQ1GDg49FBRSEBBdExNhFBRwFxd5GBhAKCh6GRk4MjKMHR2PHR1DPT2nIyOtJCREQ0O2JiatKSm5JibBKCjIKirNKyvPKyvQKyvZLS3aLS3eLS3fLS3gLS3dLi7eLi7fLi7gLi7eLy/fLy/gLy/eNTXhNja0VFTkSkrkS0u5dHTpbW3pbm7vl5fwl5fks7PEv7/2wcH74+P++Pj///+XlX/1AAAAAXRSTlMAQObYZgAABERJREFUeAHtm2mT20QYhF8BCUeAbDh2uckSYGGJNLFm1IT7nv//kyirFrrsidc91UWRD34+pVIVPf0e8uFR4sR/y4kTJ4Zh+H/9W+z0jn/FSu/6V6z0hp9Y6Q0/sdIbfmKlN/zE+Nd330dGBsY55zmPUwKmksqIsWBl/WMqCSjTmOdNmr95fTAS5LdeHHZ4cI0+ntwfWt6dsEEcARnA+bDPvUv08Ojt4RncubjClryJQ4wAcEU/eXBp+5kAWIIQrFxdDESYgtB/co4byuaQHxd3BtJMwfMzAVBijxkr5/T39oB+KcEcO0wA52/0gPM/tgdY5PlzEy1/kyDvB7ji/PUpqH7y3mPcQH9q90+cQr//3tdoW4AtH9Kv90DdP/qvQXY38ImU/1KsX9gj3gn9V7DqJ4kBOhJcK/ULfs4g8yr39SnY/edrwaj3kT3w+88AIPom+vXzHcG4llE/l2B2q3HuHq4A5E3k9Xw/pohYmo3SExj9ZwtKu9NyTUb9fC207mqzfhQGIPoeePWvMIC6B3XglT92/QygJ6iVEe56/W8DKJtYKyPY9TOAvomVCZz6GWBGX4J6g18/A3QlqP9i+MkSE4hyN1Zi9n9l5ivxsU1kAGLWv3YgAWoPGIB49QOZOyD2oO5h1Q+U6P22VRscPxAZRJkCxcTwcwfUKVRCev1kYgCxB/XZ9PrZARCpB/UQXX4SY+fvTvUgHX5SooAoU6i3IPtJChBpCvVW6O/cAb0H9XY++/EpeigBlccvM8Bt/PmzEUDYw3qcP37wAxD65QD1r1+f+gFavx6Ac/AD8DNyX4Cf/ACtXw7w+y/+CNr+6wGGdy79JWz9agD+iuMHoF8OIPyman4iEvxdPYgi7R+R9HoPUoySn2h6+V2xhNZ/ovrVBJEEvxCg+5sBA0h+Iuu1PZgiSfMnul+7FyJL9RNNr/cgZslPJL3egxJJ8hPdL21ijkWffxvgI+eUZ2WJRfKTnXfdb/vPF5oAs9r/JsBv35snXeyA7meAT78zzplIRHT4GWD44HPjtKoJIM6fAYY3rt2TLgaQ/ITfv7yTriaA2tHadNTaRAboqcY6NWsCFPtKRoIlIjZ6/f7JKeGhlXH+Z5y1gcfXi1GFsT0cgV9/91kbiS1u/UYHGcCo30jAw2vDb21i+ifAl0b/rT2IFeCrl4z6jSnwMb6HZz257QRfYGXiYzy4esWvX96Ds0d7D7SBCVy/ss9nDzkBBuAUhP47m0g/9h9mOzPr5x5I/hJkYQ+s+oUErH8OIUHjdzeR/hQ7gAn6/fom0o/YozCB7ecmCvWTwgSEfn8K9I9LEILUJKDf7gH9JcdBZhQmoN/uAf0lzXGMV20/N5G8+cmUOh/vf4F/s8wZmNbn+zcTFpQ8oqQFqZQyAiWVhKVMI0rO8wjktGwLfc37Dwbh0+knpp/Q34nlJ34zfVy/D/3PJSdOnDhx4m//OuSgMioX6QAAAABJRU5ErkJggg==
 // @include      *
-// @exclude      http*://*.youtube.com/*
-// @exclude      http*://youtube.com/*
-// @exclude      http*://*.youtube-nocookie.com/*
-// @exclude      http*://youtube-nocookie.com/*
 // @exclude      http*://*.youtu.be/*
 // @exclude      http*://youtu.be/*
-// @exclude      http*://*.ytimg.com/*
+// @exclude      http*://i*.ytimg.com/*
 // @grant        GM_openInTab
 // ==/UserScript==
 
@@ -32,17 +28,44 @@
 */
 
 // Un-comment this line if you want to open the videos in the same window
-//var tabLink = function (u) { location.href = u; };
+//var GM_openInTab = function (s) { location.href = s; };
 
 (function () {
 	"use strict";
-	var video_link,
+	var insertedObjectLinks = 0,
 		iframeHtml,
-		openLink = typeof tabLink === "undefined" ? GM_openInTab : tabLink,
+		insideIframeId,
+		openLink = typeof GM_openInTab === "function" ? GM_openInTab : function (s) {
+			location.href = s;
+		},
 		ytWatchBaseHref = "https://www.youtube.com/watch?v=",
-		risky_tags = ["object", "embed", "iframe"],
+		youtubeIdPatt = /(?:\/v\/|\?v=|\/embed\/)([a-zA-Z0-9_\-]{11})/,
+		risky_tags = ["object", "param", "embed", "iframe"],
 		MutationObserver,
 		observer,
+		addPx = function (n) {
+			return (/^\d+$/.test(n+"")) ? n+"px" : n+"";
+		},
+		getShortHandStyle = function (source, shorthand) {
+			var o = {},
+				computed = window.getComputedStyle(source, null);
+			for (var i = computed.length; i--; ) {
+				if (computed[i].indexOf(shorthand) === 0) {
+					// { "margin-top": "0px" }
+					o[computed[i]] = addPx(computed.getPropertyValue(computed[i]));
+				}
+			}
+			return o;
+		},
+		genShorthandCssStyles = function (o) {
+			var a = [];
+			for (var prop in o) {
+				if (o.hasOwnProperty(prop)) {
+					a.push(prop+": "+o[prop]);
+				}
+			}
+			return a;
+		},
 		getIframeTmpl = function (th) {
 			return [
 				"<!DOCTYPE html>\n"+
@@ -50,8 +73,7 @@
 				"<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n"+
 				"<title>Youtube Embed</title>\n"+
 				"<style> * { margin: 0 !important; padding: 0 !important; }\n"+
-				"html, html body { overflow: hidden !important; }\n"+
-				"a[href*='youtube.com/watch'] > span:hover { background-color: rgba(0, 0, 0, 0.3) !important; }\n</style>"+
+				"html, html body { overflow: hidden !important; background: #FFF; }\n</style>"+
 				"</head>\n"+
 				"<body>\n",
 				th,
@@ -87,160 +109,245 @@
 			"bKh1eHfFqpeMxO0MGDMzp2BH4LdwzPK/7VVfb123KOvJ+3HHklNHjB4/+dkXXnrl9bdyl61cW1D0Sen28srd+36u+fVQ/"+
 			"ZFj4ZNt7adjTiza0R5pbWlqPNzzc3+wak9leVlJ8eZ1Hy57J+fVl+fMmDx+dPqD/eHz+Xw+n893SxcBv2lqOtWj2hcAAA"+
 			"AASUVORK5CYII=",
-		realCss = function (el, s) {
-			return window.getComputedStyle(el, null).getPropertyValue(s);
+		isPartOfOBJECT = function (el) {
+			var hasOBJECT = false,
+				parent;
+			while ( (parent=el.parentNode) ) {
+				if ( parent.nodeName === "BODY" || parent.nodeName === "HTML" ) {
+					hasOBJECT = false;
+					break;
+				} else if (parent.nodeName === "OBJECT") {
+					hasOBJECT = parent;
+					break;
+				}
+				el = parent;
+			}
+			return hasOBJECT;
 		},
-		makeImageAnchor = function (e, isIframe) {
-			var url = ytWatchBaseHref+e.url,
-				link = document.createElement("a"),
-				span = document.createElement("span"),
-				linkCss = "",
-				spanCss = "";
-			e.dims.map(function (item) {
-				if (/^\d+$/.test(item+"")) return item+"px";
-				return item;
-			});
-			e.elMargins.map(function (item) {
-				if (/^\d+$/.test(item+"")) return item+"px";
-				return item;
-			});
+		getDim = function (cs, el, y) {
+			var clientDim = "client"+(y[0].toUpperCase())+(y.substr(1));
+			y = cs.getPropertyValue(y) || el[y] || el[clientDim] || "auto";
+			return addPx(y);
+		},
+		makeImageAnchor = function (o, isIframe) {
+			var url = ytWatchBaseHref+o.url,
+				link = document.createElement("A"),
+				span = document.createElement("SPAN"),
+				linkCss = [],
+				spanCss = [];
 			link.href = url;
 			link.title = url;
 			link.target = "_top";
-			linkCss = "position:relative !important; background:url('https://i3.ytimg.com/vi/"+e.url+"/0.jpg')"+
-				" no-repeat scroll 50% 50% / 133% auto transparent !important; "+
-				"width:"+e.dims[0]+" !important; "+
-				"height:"+e.dims[1]+" !important; ";
+			linkCss = linkCss.concat([
+				"background:url('https://i.ytimg.com/vi/"+o.url+"/0.jpg')  no-repeat scroll 50% 50% / 133% auto transparent"
+			]);
 			if (isIframe) {
-				linkCss += "display:block !important; ";
+				linkCss = linkCss.concat([
+					"position: absolute",
+					"top: 0",
+					"bottom: 0",
+					"left: 0",
+					"right: 0"
+				]);
 			} else {
-				linkCss += "display:"+(/^(inline|none)$/.test(e.elDisplay) ? "inline-block" : e.elDisplay)+" !important; "+
-					"margin-top:"+e.elMargins[0]+" !important; "+
-					"margin-bottom:"+e.elMargins[1]+" !important; "+
-					(e.elMargins[2] !== "0px" ? "margin-left:"+e.elMargins[2]+" !important; " : "")+
-					(e.elMargins[3] !== "0px" ? "margin-right:"+e.elMargins[3]+" !important; " : "")+
-					"float:"+(e.elFloat||"none")+" !important;";
+				linkCss = linkCss.concat(genShorthandCssStyles(o.border))
+				.concat(genShorthandCssStyles(o.box))
+				.concat(genShorthandCssStyles(o.margin))
+				.concat([
+					"float: "+(o.float||"none"),
+					"z-index: "+o.zIndex,
+					"top: "+o.top,
+					"bottom: "+o.bottom,
+					"left: "+o.left,
+					"right: "+o.right,
+					"position: "+(o.position !== "absolute" ? "relative" : o.position),
+					"display: "+(/^(inline|none)$/.test(o.display) ? "inline-block" : o.display),
+					// Must have an actual size - default will assume a 16:9 resolution
+					"width: "+(o.width === "auto" || o.width === "0px" ? "320px" : o.width),
+					"height: "+(o.height === "auto" || o.height === "0px" ?
+						(o.width !== "auto" && o.width !== "0px" ? Math.ceil((parseInt(o.width, 10)/16)*9) : "180")+"px" : o.height)
+				]);
 			}
-			link.style.cssText = linkCss;
-			spanCss = "position: absolute !important; "+
-				"top: 0 !important; bottom: 0 !important; "+
-				"left: 0 !important; right: 0 !important; "+
-				"background-color:rgba(0, 0, 0, 0.08); "+ // leave w/o important rule to enable :hover support
-				"background-image:url('"+youtubeIcon+"') !important; "+
-				"background-position:50% 50% !important; "+
-				"background-repeat:no-repeat !important; "+
-				"background-size:64px 64px !important; ";
-			span.style.cssText = spanCss;
+			spanCss = spanCss.concat([
+				"background: url('"+youtubeIcon+"') no-repeat scroll 50% 50% / 64px 64px rgba(0,0,0,0.08)",
+				"position: absolute",
+				"top: 0",
+				"bottom: 0",
+				"left: 0",
+				"right: 0"
+			]);
+			// Remove falsy values
+			linkCss = linkCss.filter(function (s) { s = s.trim(); return !!s; });
+			link.style.cssText = linkCss.concat([""]).join(" !important; ");
+			span.style.cssText = spanCss.concat([""]).join(" !important; ");
 			span.innerHTML = "&nbsp;";
 			link.appendChild(span);
 			return link;
 		},
-		init = function (dynamicNode) {
-			var index,
-				risky_node,
-				risky_attributes,
-				bad_elements = [],
-				risky = !dynamicNode ? document.querySelectorAll(risky_tags.join(", ")) : [dynamicNode];
+		makeClickHandler = function (o) {
+			return function (event) {
+				event.preventDefault();
+				var link = event.currentTarget;
+				// alias for GM_openInTab
+				if (link.nodeName === "A") {
+					link = link.querySelector("span");
+				}
+				link.style.setProperty("background-color", "rgba(0,0,0,0.6)", "important");
+				openLink(ytWatchBaseHref+o.url);
+				return false;
+			};
+		},
+		init = function (dynamicNodes) {
+			var nowNum = Date.now(),
+				selector,
+				paramParent,
+				videoLink,
+				riskyNode,
+				computedStyle,
+				riskyAttributes,
+				fauxLink,
+				videoId,
+				badElements = [],
+				linkHolder = document.createElement("DIV"),
+				risky = !dynamicNodes ? document.querySelectorAll(risky_tags.join(", ")) : dynamicNodes;
+			linkHolder.style.setProperty("display", "none", "important");
+			linkHolder.setAttribute("hidden", true);
+			linkHolder.dataset.cyetoilPlaceholder = nowNum+"";
+			// Loop bad elements
 			for (var j = 0, jLen = risky.length; j < jLen; j+=1) {
-				index = 0;
-				risky_attributes = risky[j].attributes;
-				for (var k = 0, kLen = risky_attributes.length; k < kLen; k+=1) {
-					risky_node = risky_attributes[k].value;
-					if ((risky_node.indexOf("youtube.com") >= 0) || (risky_node.indexOf("ytimg.com") >= 0) || (risky_node.indexOf("youtube-nocookie.com") >= 0)) {
-						if (risky_node.indexOf("/v/") >= 0) {
-							index = risky_node.indexOf("/v/")+3;
-						} else if (risky_node.indexOf("?v=") >= 0) {
-							index = risky_node.indexOf("?v=")+3;
-						} else if (risky_node.indexOf("/embed/") >= 0) {
-							index = risky_node.indexOf("/embed/")+7;
-						}
-						if (index > 0) {
-							bad_elements.push({
-								el: risky[j],
-								elMargins: [
-									realCss(risky[j], "margin-top"),
-									realCss(risky[j], "margin-bottom"),
-									realCss(risky[j], "margin-left"),
-									realCss(risky[j], "margin-right")
-								],
-								elFloat: realCss(risky[j], "float"),
-								elDisplay: realCss(risky[j], "display"),
-								url: risky_node.substring(index, index+11),
-								dims: [
-									realCss(risky[j], "width") || risky[j].width || risky[j].clientWidth || "auto",
-									realCss(risky[j], "height") || risky[j].height || risky[j].clientHeight || "auto"
-								]
-							});
-						}
+				riskyAttributes = risky[j].attributes;
+				// Loop each elements attributes
+				for (var k = 0, kLen = riskyAttributes.length; k < kLen; k+=1) {
+					paramParent = null;
+					// http://alistapart.com/article/flashsatay
+					// EMBED is part of object, skip this EMBED entirely
+					if (risky[j].nodeName === "EMBED" && isPartOfOBJECT(risky[j])) {
+						break;
+					}
+					if (risky[j].nodeName === "PARAM") {
+						// Save parent OBJECT for later use as replace & css target
+						paramParent = isPartOfOBJECT(risky[j]);
+						// Break if PARAM is not part of an OBJECT (invalid html)
+						if (!paramParent) break;
+					}
+					riskyNode = riskyAttributes[k].value;
+					if (!fauxLink) fauxLink = document.createElement("A");
+					fauxLink.href = riskyNode;
+					// Get id
+					if ((videoId=(fauxLink.pathname+fauxLink.search).match(youtubeIdPatt)) === null) continue;
+					// Check domain
+					if (fauxLink.hostname.indexOf("youtube.com") >= 0
+						|| fauxLink.hostname.indexOf("youtube-nocookie.com") >= 0) {
+						badElements.push({
+							"node": paramParent || risky[j],
+							"url": videoId[1]
+						});
 						break;
 					}
 				}
 			}
-			bad_elements.forEach(function (o) {
+			badElements.forEach(function (el) {
 				var linkTabHandler;
-				if (o.el.dataset.cye2il === "loaded") return;
-				o.el.setAttribute("data-cye2il", "loaded");
-				linkTabHandler = function (event) {
-					event.preventDefault();
-					var el = event.currentTarget;
-					if (el.nodeName === "A") {
-						el = el.querySelector("span");
-					}
-					// alias for GM_openInTab
-					openLink(ytWatchBaseHref+o.url);
-					el.style.setProperty("background-color", "rgba(0, 0, 0, 0.6)", "important");
-					return false;
-				};
-				if (o.el.nodeName === "IFRAME") {
-					video_link = makeImageAnchor(o, true);
+				if (/^loaded\d{13}$/.test(el.node.dataset.cyetoil+"")) {
+					// Prevents PARAMs inside OBJECTs from duplicating (also fixes the Demo)
+					return;
+				}
+				insertedObjectLinks += 1;
+				// Copy all (common) styles that the video has
+				computedStyle = window.getComputedStyle(el.node, null);
+				el.margin = getShortHandStyle(el.node, "margin");
+				el.border = getShortHandStyle(el.node, "border");
+				el.box = getShortHandStyle(el.node, "box");
+				el.float = computedStyle.getPropertyValue("float");
+				el.clear = computedStyle.getPropertyValue("clear");
+				el.display = computedStyle.getPropertyValue("display");
+				el.position = computedStyle.getPropertyValue("position");
+				el.zIndex = computedStyle.getPropertyValue("z-index");
+				el.top = addPx(computedStyle.getPropertyValue("top"));
+				el.bottom = addPx(computedStyle.getPropertyValue("bottom"));
+				el.left = addPx(computedStyle.getPropertyValue("left"));
+				el.right = addPx(computedStyle.getPropertyValue("right"));
+				el.width = getDim(computedStyle, el.node, "width");
+				el.height = getDim(computedStyle, el.node, "height");
+				linkTabHandler = makeClickHandler.call(null, el);
+				if (el.node.nodeName === "IFRAME") {
+					el.node.setAttribute("data-cyetoil", "loaded"+nowNum);
+					el.node.setAttribute("data-cyetoil-uid", insertedObjectLinks+"");
+					videoLink = makeImageAnchor(el, true);
 					// Stop the iframe anchor link, and set a click event w/ GM_openInTab on the iframe later
-					iframeHtml = getIframeTmpl(video_link.outerHTML).join("");
+					iframeHtml = getIframeTmpl(videoLink.outerHTML).join("");
 					// Remove any safeguards so I can access the iframe later
-					o.el.removeAttribute("sandbox");
-					o.el.addEventListener("load", function () {
-						if (o.el.contentDocument) {
-							o.el.contentDocument.querySelectorAll("a")[0].onclick = linkTabHandler;
-						} else if (o.el.contentWindow) {
-							(o.el.contentWindow.document||o.el.document).querySelectorAll("a")[0].onclick = linkTabHandler;
+					el.node.removeAttribute("sandbox");
+					el.node.addEventListener("load", function () {
+						if (el.node.contentDocument) {
+							el.node.contentDocument.querySelectorAll("a")[0].onclick = linkTabHandler;
+						} else if (el.node.contentWindow) {
+							(el.node.contentWindow.document||el.node.document).querySelectorAll("a")[0].onclick = linkTabHandler;
 						}
 					});
-					o.el.src = "data:text/html,base64,"+window.btoa(iframeHtml);
-					// To prevent browser caching (ie ff) I'm settings both src & srcdoc
-					o.el.srcdoc = iframeHtml;
+					// To prevent browser caching (ie ff, doesn't always work) I'm setting both src & srcdoc
+					el.node.src = "data:text/html,base64,"+window.btoa(iframeHtml);
+					el.node.srcdoc = iframeHtml;
 				} else {
-					video_link = makeImageAnchor(o);
+					videoLink = makeImageAnchor(el);
+					el.node.setAttribute("data-cyetoil", "loaded"+nowNum);
+					videoLink.setAttribute("data-cyetoil", "loaded"+nowNum);
+					el.node.setAttribute("data-cyetoil-uid", insertedObjectLinks+"org");
+					videoLink.setAttribute("data-cyetoil-uid", insertedObjectLinks+"");
 					// Stop the default anchor link and set a click event w/ GM_openInTab
-					video_link.onclick = linkTabHandler;
-					o.el.style.display = "none";
-					o.el.parentNode.replaceChild(video_link, o.el);
+					videoLink.onclick = linkTabHandler;
+					linkHolder.appendChild(videoLink);
 				}
 			});
+			// Replace after collecting to preserve css order
+			document.body.appendChild(linkHolder);
+			selector = "[data-cyetoil='loaded"+nowNum+"'][data-cyetoil-uid]";
+			Array.prototype.slice.call(linkHolder.querySelectorAll(selector), 0).forEach(function (node) {
+				var moved = node.parentNode.removeChild(node),
+					old = document.querySelector("[data-cyetoil-uid='"+(moved.dataset.cyetoilUid)+"org']");
+				old.parentNode.replaceChild(moved, old);
+			});
+			linkHolder.parentNode.removeChild(linkHolder);
 		};
-	// http://michalbe.blogspot.com/2013/04/javascript-less-known-parts-dom.html
-	// https://developer.mozilla.org/en/docs/Web/API/MutationObserver
-	MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver;
-	observer = new MutationObserver(function(mutations) {
-		mutations.forEach(function(mutation) {
-			if (mutation.addedNodes && mutation.addedNodes.length) {
+	if (/^(?:(?:[a-zA-Z0-9\-]+\.)?youtube(?:\-nocookie)?\.com)$/.test(document.location.hostname)) {
+		if (top.window != self.window
+			&& (insideIframeId=(document.location.pathname+document.location.search).match(youtubeIdPatt)) !== null) {
+			console.log("IFRAME", insideIframeId[1], document.location.href);
+			console.log(document.querySelectorAll("body > *"));
+		}
+	} else {
+		return console.log("not a youtube domain", document.location.href);
+		// https://developer.mozilla.org/en/docs/Web/API/MutationObserver
+		// https://dev.opera.com/articles/mutation-observers-tutorial/
+		MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
+		observer = new MutationObserver(function(mutations) {
+			mutations.forEach(function(mutation) {
+				var nodes = [];
+				if (!mutation.addedNodes || mutation.addedNodes.length === 0) return;
 				Array.prototype.slice.call(mutation.addedNodes, 0).forEach(function (node) {
 					if (node.nodeName && risky_tags.indexOf(node.nodeName.toLowerCase()) !== -1) {
 						setTimeout(function () {
+							nodes.push(node);
+							Array.prototype.slice.call(node.querySelectorAll("*"), 0).forEach(function (child) {
+								// Add all nodes inside the detected one
+								nodes.push(child);
+							});
+							init(nodes);
 							// Allow other script to (maybe) act first, like fluidvids or fitvids
-							init(node);
-						}, 200);
+						}, 100);
 					}
 				});
-			}
+			});
 		});
-	});
-	setTimeout(function () {
-		// Allow other script to (maybe) act first, like fluidvids or fitvids
-		init();
-	}, 200);
-	observer.observe(document.body, {
-		childList: true,
-		subtree: true,
-		attributes: false,
-		characterData: false
-	});
+		setTimeout(function () {
+			// Allow other script to (maybe) act first, like fluidvids or fitvids
+			init();
+		}, 100);
+		observer.observe(document.body, {
+			childList: true,
+			subtree: true,
+			attributes: false,
+			characterData: false
+		});
+	}
 }());
