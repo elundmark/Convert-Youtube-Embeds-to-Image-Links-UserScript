@@ -1,37 +1,24 @@
-# Use as standalone on your own site
-
-* The `user.js` file can be can be added and used on any page as a standalone way of converting your Youtube embeds on your blog or whatever, as long as you un-comment line **35**, or add this to the top of the script.
-  ```js
-  var tabLink = function (u) { location.href = u; };
-  ```
-
 # Install as UserScript
 
-Can be installed from these repositories:
+You can find and install it from any of these repositories:
 * [https://openuserjs.org/scripts/elundmark/Convert_Youtube_Embeds_to_Image_Links](https://openuserjs.org/scripts/elundmark/Convert_Youtube_Embeds_to_Image_Links)
 * [https://monkeyguts.com/code.php?id=681](https://monkeyguts.com/code.php?id=681)
 * [https://greasyfork.org/en/scripts/7096-convert-youtube-embeds-to-image-links](https://greasyfork.org/en/scripts/7096-convert-youtube-embeds-to-image-links)
 
-# Demo
+# Applies to all websites
 
-* [http://elundmark.se/_files/js/convert_youtube_embeds_to_image_links/cye2il-demo/](http://elundmark.se/_files/js/convert_youtube_embeds_to_image_links/cye2il-demo/)
-
-![screenshot of demo](http://elundmark.se/_files/js/convert_youtube_embeds_to_image_links/screenshot.jpg "Screenshot of the demo page")
-
-# Applies to
-
-* All webpages, except:
-  - `http*://*.youtube.com/*`
-  - `http*://*.youtube-nocookie.com/*`
+* Exceptions:
   - `http*://*.ytimg.com/*`
   - `http*://*.youtu.be/*`
+  - `http*://youtu.be/*`
+  - Also note that no action is taken on Youtube's own website.
 
 # About
 
 * Replaces _all_ embedded Youtube videos with a simple thumbnail and link.
-* This userscript is based on [Stop Overzealous Embedding](https://openuserjs.org/scripts/ConnorBehan/Stop_Overzealous_Embedding) but extends it's functionality to instead change the _content_ of the iframe to a thumbnail and a link, which looks just like the video itself. This means it will keep the same CSS styling, provided it's an `iframe` element and not an `object` or `embed`.
-  - If it is an `object` or `embed` tag, they are replaced with a linked image, and _tries_ to look like the video.
-* All videos open in a new tab.
+* This userscript is based on [Stop Overzealous Embedding](https://openuserjs.org/scripts/ConnorBehan/Stop_Overzealous_Embedding) but is rewritten to instead change the _content_ of the iframe to a thumbnail and a link, which looks just like the video itself. This means it will keep the same CSS styling, provided it's an `iframe` element and not an `object` or `embed`.
+  - If it is an `object` or `embed` tag, they are replaced with a linked image, and _tries_ to look like the video by copying (most of) it's CSS styles.
+* All videolinks will open in the same window, but if the prefer it to open in a new tab you need to change `iframesLinkTarget` and/or `nonIframesLinkTarget` in the sourcecode to `"_blank"`.
 
 ## Requires HTML5 support:
 
@@ -45,6 +32,13 @@ _Require Secure Updates_ must be disabled to enable auto-updates.
 **Script released under** [MIT License](http://opensource.org/licenses/MIT)
 
 **Icons by** [Pixel Bazaar](https://www.iconfinder.com/zlaten)
+
+# Demo
+
+* Remember, this demo needs the userscript installed to work!
+* [http://elundmark.se/_files/js/convert_youtube_embeds_to_image_links/cye2il-demo/](http://elundmark.se/_files/js/convert_youtube_embeds_to_image_links/cye2il-demo/)
+
+![screenshot of demo](http://elundmark.se/_files/js/convert_youtube_embeds_to_image_links/cye2il-demo/screenshot.png "Screenshot of the demo page")
 
 ### Copyright (c) 2014 Erik Lundmark <mail@elundmark.se>, openuserjs.org/scripts/ConnorBehan/
 
