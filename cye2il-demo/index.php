@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=1">
 	<title>Demo of 'Convert Youtube Embeds to Image Links'</title>
 	<link rel="stylesheet" type="text/css" href="normalize.css">
@@ -14,7 +14,7 @@
 	<h1><a href="https://github.com/elundmark/Convert-Youtube-Embeds-to-Image-Links-UserScript/">Demo of <span>Convert Youtube Embeds to Image Links</span></a></h1>
 	<h3>Normal embeds</h3>
 	<ul>
-		<li>Every other embedded video nowadays seems to be <code>&lt;iframe&gt;</code>s, which are fully supported by this userscript. Besides an image linking to the video, it also gets a title, mimicing the original embed to some extent. If the embed is an <code>&lt;object&gt;</code> or <code>&lt;embed&gt;</code>, it still gets a link and an image, but no title. See futher down this page for three more examples of this.</li>
+		<li>Every other embedded video nowadays seems to be <code>&lt;iframe&gt;</code>s, which are fully supported by this userscript. Besides an image linking to the video, it also show the time + the title + view count, mimicing the original embed to some extent. If the embed is an <code>&lt;object&gt;</code> or <code>&lt;embed&gt;</code>, it only gets the image. See futher down this page for three more examples of <code>&lt;object&gt;</code>s. I'm also working on adding Vimeo support, but I might make that into a separate userscript.</li>
 		<li>These three videos were embedded in the following ways:
 			<ol>
 				<li>Standard <code>&lt;iframe&gt;</code> tag.</li>
@@ -27,7 +27,7 @@
 	</ul>
 	<div class="videos" id="main_examples">
 		<!-- Standard embed -->
-		<iframe width="640" height="360" src="//www.youtube.com/embed/VVnOgS_48dQ" frameborder="0" allowfullscreen></iframe>
+		<iframe width="640" height="360" src="//www.youtube.com/embed/VVnOgS_48dQ" allowfullscreen></iframe>
 		<!-- old-school EMBED -->
 		<embed src="//www.youtube.com/v/2RZ5xZ1kUlc" width="640" height="360" type="application/x-shockwave-flash">
 		<!-- Dynamically injected iframe -->
@@ -38,12 +38,13 @@
 	</script>
 </section>
 <section>
+	<h2 hidden>Opening links</h2>
 	<ul>
 		<li>All videolinks will open in the same window, but if the prefer it to open in a new tab you need to change <code>iframesLinkTarget</code> and/or <code>nonIframesLinkTarget</code> in the sourcecode to <code>&quot;_blank&quot;</code>.</li>
 	</ul>
 </section>
 <footer>
-	<button id="show_html_source">Show the html source</button> <button id="show_js_source">Show the javascript</button>
+	<button disabled="disabled" id="show_html_source">Show the html source</button> <button disabled="disabled" id="show_js_source">Show the javascript</button>
 	<pre id="html_source"></pre>
 	<pre id="javascript_source"><code><?php
 $filecontents = file_get_contents("../convert_youtube_embeds_to_image_links.user.js");
@@ -56,11 +57,12 @@ print $filecontents;
 	<ul>
 		<li>All <code>&lt;object&gt;</code> tags should work, provided they have either a <code>data=&quot;&quot;</code> attribute or a <code>&lt;param&gt;</code> tag inside that has the video url.</li>
 		<li><code>&lt;embed&gt;</code> are also targeted, but only if they <em>live alone</em>, a.k.a. not inside an <code>&lt;object&gt;</code> tag.</li>
-		<li>Since it replaces elements with something completely different, it will <em>try</em> to look like the video by copying most of the CSS styles. One limitation with this is <a href="https://bugzilla.mozilla.org/show_bug.cgi?id=381328">a</a> <a href="https://bugs.webkit.org/show_bug.cgi?id=13343">bug</a> in the browser which makes it impossible to catch <code>auto</code> as a margin, like in <code>margin: 0 auto;</code>.</li>
+		<li>A <code>&lt;a&gt;</code> tag will replace it.</li>
+		<li>Since it replaces elements with something completely different, it will <em>try</em> to look like the video by copying most of the CSS styles. One limitation with this is <a href="https://bugzilla.mozilla.org/show_bug.cgi?id=381328">a</a> <a href="https://bugs.webkit.org/show_bug.cgi?id=13343">bug</a> in the browser which makes it impossible to catch <code>auto</code> as a margin, like in <code>margin: 0 auto;</code>. Besides that exception, it should look exactly as the developer of the site intended.</li>
 		<li>Also notice that the userscript fires at <code>document-end</code> for <code>&lt;iframe&gt;</code>s, and at <code>window onload</code> for all other embeds. with an additional 200 ms delay, so that the window has time to render properly before copying styles is possible.</li>
 		<li>As a bonus, this script also works for most broken embeds regardless of browser.</li>
 	</ul>
-	<button id="load_objects">Click to load these 3 examples</button>
+	<button disabled="disabled" id="load_objects">Click to load these 3 examples</button>
 	<div class="videos" id="object_examples"></div>
 </section>
 <footer id="object_examples_code"></footer>
@@ -113,29 +115,34 @@ window.addEventListener("load", function () {
 		footer = $("#object_examples"),
 		objectPre = document.createElement("PRE"),
 		objectCode = document.createElement("CODE");
-	if (objectPre.className.indexOf("loaded") === -1) {
+	if (!objectPre.className !== "loaded") {
 		objectPre.className = "loaded";
 		objectCode.textContent = (objectsHtml.join("\n").trim())+"\n";
 		objectPre.appendChild(objectCode);
 		$("#object_examples_code").appendChild(objectPre);
+		$("#object_examples_code").className = "loaded";
 		hljs.highlightBlock(objectCode);
 	}
+	$("#load_objects").removeAttribute("disabled");
 	$("#load_objects").addEventListener("click", function () {
-		if (footer.querySelectorAll("a").length) return;
 		var s = (objectsHtml.join("\n").trim())+"\n";
+		this.setAttribute("disabled", true);
 		footer.innerHTML = s;
+		footer.className = footer.className+" loaded";
 	});
+	$("#show_js_source").removeAttribute("disabled");
 	$("#show_js_source").addEventListener("click", function () {
 		$("#javascript_source").className = "loaded";
 		hljs.highlightBlock($("#javascript_source code"));
-		$("#show_js_source").style.setProperty("display", "none", "important");
+		this.setAttribute("disabled", true);
 	});
+	$("#show_html_source").removeAttribute("disabled");
 	$("#show_html_source").addEventListener("click", function () {
 		$("#html_source").className = "loaded";
 		$("#html_source").appendChild(document.createElement("CODE"));
 		$("#html_source code").textContent = window.exampleHtml+"";
 		hljs.highlightBlock($("#html_source code"));
-		$("#show_html_source").style.setProperty("display", "none", "important");
+		this.setAttribute("disabled", true);
 	});
 	setTimeout(function () {
 		makeArray($$(".video-container")).forEach(function (node) {
@@ -143,7 +150,6 @@ window.addEventListener("load", function () {
 			vf.setAttribute("src", "//www.youtube.com/embed/"+node.dataset.videoId);
 			vf.setAttribute("width", "640");
 			vf.setAttribute("height", "360");
-			vf.setAttribute("frameborder", "0");
 			vf.setAttribute("allowfullscreen", "allowfullscreen");
 			node.parentNode.replaceChild(vf, node);
 		});

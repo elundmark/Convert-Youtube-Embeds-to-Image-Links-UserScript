@@ -30,13 +30,15 @@
 // Change iframesLinkTarget / nonIframesLinkTarget to "_blank" if you want to open the videos in a new window
 (function () {
 	"use strict";
+	if (!Boolean("getComputedStyle" in window)) return;
 	var ytWatchBaseHref = "https://www.youtube.com/watch?v=",
+		youtubeDomainPatt = /^(?:(?:[a-zA-Z0-9\-]+\.)?youtube(?:\-nocookie)?\.com)$/,
 		riskyTags = ["object", "param", "embed"],
 		youtubeIdPatt = /(?:\/v\/|\?v=|\/embed\/)([a-zA-Z0-9_\-]{11})/,
 		iframesLinkTarget = "_top",
 		nonIframesLinkTarget = "_self",
 		loadedPatt = /^loaded\d{13}$/,
-		insertedObjectLinks = 0,
+		replCounter = 0,
 		insideIframeId,
 		MutationObserver,
 		observer,
@@ -53,41 +55,20 @@
 			}
 			return a;
 		},
-		addPx = function (n) {
-			return (/^\d+$/.test(n+"")) ? n+"px" : n+"";
-		},
-		getShortHandStyle = function (source, shorthand) {
-			var o = {},
-				computed = window.getComputedStyle(source, null);
-			for (var i = computed.length; i--; ) {
-				if (computed[i].indexOf(shorthand) === 0) {
-					// { "margin-top": "0px" }
-					o[computed[i]] = addPx(computed.getPropertyValue(computed[i]));
-				}
-			}
-			return o;
-		},
-		genShorthandCssStyles = function (o) {
-			var a = [];
-			for (var prop in o) {
-				if (o.hasOwnProperty(prop)) {
-					a.push(prop+": "+o[prop]);
-				}
-			}
-			return a;
-		},
 		getIframeTmpl = function (docTitle, th) {
+			// Inline hardcoded style attributes helps weird "leakage" of forced styles to apply to other elements
+			// can't replicate it but it happened before this, even to a top window from an iframe!
 			return [
-				"<!DOCTYPE html>\n"+
-				"<html style=\"margin:0 !important;padding:0 !important;overflow:hidden !important;\">\n"+
-				"<head>\n"+
-				"<meta charset=\"utf-8\">\n"+
-				"<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n"+
-				"<title>"+docTitle+"</title>\n"+
-				"</head>\n"+
-				"<body style=\"margin:0 !important;padding:0 !important;background:#FFF;overflow:hidden !important;\">\n",
+				"<!DOCTYPE html>"+
+				"<html style='margin:0!important;padding:0!important;overflow:hidden!important;'>"+
+				"<head>"+
+				"<meta charset='utf-8'>"+
+				"<meta name='viewport' content='width=device-width, initial-scale=1'>"+
+				"<title>"+docTitle+"</title>"+
+				"</head>"+
+				"<body style='margin:0!important;padding:0!important;background:#FFF;overflow:hidden!important;'>",
 				th,
-				"</body>\n"+
+				"</body>"+
 				"</html>"
 			];
 		},
@@ -141,178 +122,221 @@
 			"gxMS45ODN6bS0xMS45ODMtMTQuMjE2di05LjI1N2MwLTIuNTM0LTEuNjUyLTMuOTY3LTQuNDA4LTMuOTY3LTIuNzU0IDA"+
 			"tNC40MDYgMS40MzMtNC40MDYgMy45Njd2OS4yNTdoOC44MTR6Ii8+PC9nPjwvc3ZnPg==",
 		isPartOfOBJECT = function (el) {
-			var hasOBJECT = false,
-				parent;
+			var parent;
+			if (!el) return parent;
 			while ( (parent=el.parentNode) ) {
 				if ( parent.nodeName === "BODY" || parent.nodeName === "HTML" ) {
-					hasOBJECT = false;
+					parent = false;
 					break;
 				} else if (parent.nodeName === "OBJECT") {
-					hasOBJECT = parent;
 					break;
 				}
 				el = parent;
 			}
-			return hasOBJECT;
+			return parent;
 		},
-		makeStyles = function (o, cs, type) {
-			type = type.replace(/:/g, "");
-			o[type] = o[type] || {};
-			o[type].content = cs.getPropertyValue("content");
-			o[type].margin = getShortHandStyle(o.node, "margin");
-			o[type].padding = getShortHandStyle(o.node, "padding");
-			o[type].border = getShortHandStyle(o.node, "border");
-			o[type].box = getShortHandStyle(o.node, "box");
-			o[type].min = getShortHandStyle(o.node, "min");
-			o[type].max = getShortHandStyle(o.node, "max");
-			o[type].float = cs.getPropertyValue("float");
-			o[type].clear = cs.getPropertyValue("clear");
-			o[type].display = cs.getPropertyValue("display");
-			o[type].position = cs.getPropertyValue("position");
-			o[type].zIndex = cs.getPropertyValue("z-index");
-			o[type].verticalAlign = cs.getPropertyValue("vertical-align");
-			o[type].top = addPx(cs.getPropertyValue("top"));
-			o[type].bottom = addPx(cs.getPropertyValue("bottom"));
-			o[type].left = addPx(cs.getPropertyValue("left"));
-			o[type].right = addPx(cs.getPropertyValue("right"));
-			o[type].width = getDim(cs, o.node, "width");
-			o[type].height = getDim(cs, o.node, "height");
+		validateStyleArray = (function () {
+			var patt = /^(?:[\-_][a-zA-Z0-9]+[\-_])?background(?:$|\-)/;
+			return function (a) {
+				a = Array.isArray(a) && a[0] && a[1] ? a : null;
+				// Remove all -x-|background|-
+				return (a && !patt.test(a[0]));
+			};
+		}()),
+		sortMultiArray = function (a, b) {
+			// Sort so vendor prefixes goes at the top
+			// www.w3.org/TR/CSS2/syndata.html - "An initial dash or underscore [...]"
+			return a[0] > b[0] ? 1 : a[0] < b[0] ? -1 : 0;
+		},
+		copyAllStyles = function (element, psuedoSelector, property) {
+			// stackoverflow.com/questions/2558426
+			var styles = [],
+				cs;
+			// The DOM Level 2 CSS way
+			cs = getComputedStyle(element, psuedoSelector);
+			if (cs.length !== 0) {
+				for (var i = 0, len = cs.length; i < len; i+=1) {
+					if (!property || (property && cs.item(i) === property)) {
+						styles.push([cs.item(i), cs.getPropertyValue(cs.item(i))]);
+						if (property) break;
+					}
+				}
+			} else {
+				// Opera workaround. Opera doesn't support `item`/`length` on CSSStyleDeclaration.
+				for (var k in cs) {
+					if (cs.hasOwnProperty(k)) {
+						if (!property || (property && k === property)) {
+							styles.push([k, cs[k]]);
+						}
+						if (property) break;
+					}
+				}
+			}
+			styles = styles.filter(validateStyleArray).sort(sortMultiArray);
+			return property ? styles[0] : styles;
+		},
+		getDim = (function () {
+			var numPatt = /^\d+$/;
+			return function (dim, el, y) {
+				var clientDim = "client"+(y[0].toUpperCase())+(y.substr(1));
+				dim = parseInt(dim, 10) === 0 ? (el.getAttribute(y) || el[clientDim]) : "auto";
+				return (numPatt.test(dim+"")) ? dim+"px" : dim+"";
+			};
+		}()),
+		makeStyles = function (o, type, psIds) {
+			o[type] = {};
+			if (psIds) {
+				// (Object) <A> Psuedo elements :before { rule: 1; } :after { rule: 1; }
+				o[type].styleTagContent = "a[data-cyetoil='loaded"+psIds[0]+"'][data-cyetoil-uid='"+psIds[1]+"']:"+type+" {\n";
+				o[type].styleTagContent += (copyAllStyles(o.node, ":"+type).map(function (a) {
+					return a ? a.join(":")+"!important;\n" : "";
+				}).join("")+"\n}\n");
+				o[type].styleTag = document.createElement("STYLE");
+				o[type].styleTag.textContent = o[type].styleTagContent;
+				o[type].styleTag.dataset.cyetoilStyleFor = type+psIds[1];
+				document.querySelector("head").appendChild(o[type].styleTag);
+			} else {
+				// (Object) <A> styles
+				o[type].styles = (copyAllStyles(o.node, null).concat([
+					[
+						"background",
+						"url('https://i.ytimg.com/vi/"+o.videoId+"/0.jpg') no-repeat scroll 50% 50% / 133% auto transparent"
+					]
+				]).map(function (a) {
+					// Must be able to set an absolute positioned SPAN inside it
+					if (a[0] === "position" && a[1] !== "fixed" && a[1] !== "absolute") a[1] = "relative";
+					// It's an inline <A> tag, so it must be block-ish
+					if (a[0] === "display" && a[1] === "inline") a[1] = "inline-block";
+					// Force cursor back to pointer
+					if (a[0] === "cursor") a[1] = "pointer";
+					// <A> must have a set dimension
+					if (a[0] === "width") {
+						if (a[1] === "auto" || a[1] === "0px") a[1] = getDim(a[1], o.node, "width");
+						// Force a minimum width - usually the object hasn't loaded yet, hence the 200ms delays
+						if (a[1] === "auto" || a[1] === "0px") a[1] = "320px";
+						o.forceObjectWidth = a[1];
+					}
+					if (a[0] === "height") {
+						if (a[1] === "auto" || a[1] === "0px") a[1] = getDim(a[1], o.node, "height");
+						a[1] = (
+							(a[1] === "auto" || a[1] === "0px" ? (o.forceObjectWidth !== "auto" && o.forceObjectWidth !== "0px" ?
+							// forces a 16:9 resolution for objects with forced dimensions
+							Math.ceil((parseInt(o.forceObjectWidth, 10)/16)*9) : "180")+"px" : a[1])
+						);
+					}
+					return a ? a.join(":")+"!important;" : "";
+				}).join(""));
+			}
 			return o;
 		},
-		getDim = function (cs, el, y) {
-			var clientDim = "client"+(y[0].toUpperCase())+(y.substr(1));
-			y = cs.getPropertyValue(y) || el[y] || el[clientDim] || "auto";
-			return addPx(y);
-		},
-		compileBaseStyles = function (a, o) {
-			return (
-				a.concat(genShorthandCssStyles(o.border))
-				.concat(genShorthandCssStyles(o.box))
-				.concat(genShorthandCssStyles(o.min))
-				.concat(genShorthandCssStyles(o.max))
-				.concat(genShorthandCssStyles(o.margin))
-				.concat(genShorthandCssStyles(o.padding))
-			);
-		},
-		makeImageAnchor = function (o, isIframe) {
-			var url = ytWatchBaseHref+o.videoId,
-				link = document.createElement("A"),
-				span = document.createElement("SPAN"),
-				style,
-				banner,
-				linkCss = [],
-				spanCss = [];
-			link.href = url;
-			link.title = (o.atitle ? o.atitle+" - "+o.videoId : url);
-			link.setAttribute("onmouseup", "this.querySelector('span').style.backgroundColor='rgba(0,0,0,0.6)';"+
-				"this.querySelector('span').style.opacity='1';");
-			linkCss = linkCss.concat([
-				"background:url('https://i.ytimg.com/vi/"+o.videoId+"/0.jpg')  no-repeat scroll 50% 50% / 133% auto transparent"
-			]);
-			if (isIframe) {
-				banner = document.createElement("I");
-				banner.textContent = (o.stats.time ? o.stats.time+"  " : "")+link.title+
-					(o.stats.views ? " - "+o.stats.views : "");
-				link.title = banner.textContent;
-				banner.style.cssText = ([
-					"position: absolute",
-					"bottom: 0",
-					"left: 0",
-					"height: 30px",
-					"width: 100%",
-					"box-sizing: border-box",
-					"padding: 8px 0px 0px 12px",
-					"text-shadow: 0 1px 0 #000000",
-					"font: 13px/1 sans-serif",
-					"color: rgba(255,255,255,0.8)",
-					"background-color: rgba(0,0,0,0.88)",
-					"overflow: hidden",
-					"white-space: nowrap",
-					"text-overflow: ellipsis",
-					"border-bottom: 1px solid #000000"
-				]).concat([""]).join(" !important; ");
-				link.target = iframesLinkTarget;
-				spanCss = spanCss.concat([
-					"margin: 0",
-					"padding: 0",
-					"background: url('"+youtubeIcon+"') no-repeat scroll 50% 50% / 16% auto rgba(0,0,0,0.08)"
-				]);
-				linkCss = linkCss.concat([
-					"margin: 0",
-					"padding: 0",
-					"position: absolute",
-					"top: 0",
-					"bottom: 0",
-					"left: 0",
-					"right: 0"
-				]);
-			} else {
-				if (o.before) {
-					style = style || document.createElement("STYLE");
-					o.before.styles = compileBaseStyles([], o.before);
-					o.before.styles = o.before.styles.concat([
-						"float: "+(o.before.float||"none"),
-						"z-index: "+o.before.zIndex,
-						"vertical-align: "+o.before.verticalAlign,
-						"top: "+o.before.top,
-						"bottom: "+o.before.bottom,
-						"left: "+o.before.left,
-						"right: "+o.before.right,
-						"position: "+o.before.position,
-						"display: "+o.before.display,
-						"width: "+o.before.width,
-						"height: "+o.before.height
-					]);
-					style.textContent = o.before.selector+" {\n"+(
-						o.before.styles.filter(function (s) {
-							s = s.trim();
-							return !!s;
-						}).concat([""]).join(" !important;\n")
-					)+"\n}\n";
-					document.querySelector("head").appendChild(style)
+		makeImageAnchor = (function () {
+			var linkCss = [
+					"margin:0",
+					"padding:0",
+					"position:absolute",
+					"top:0",
+					"bottom:0",
+					"left:0",
+					"right:0"
+				],
+				bannerCss = [
+					"position:absolute",
+					"bottom:0",
+					"left:0",
+					"height:30px",
+					"width:100%",
+					"box-sizing:border-box",
+					"padding:8px 0 0 12px",
+					"text-shadow:0 1px 0 #000000",
+					"font:13px/1 sans-serif",
+					"color:rgb(255,255,255)",
+					"background-color:rgba(0,0,0,0.75)",
+					"overflow:hidden",
+					"white-space:nowrap",
+					"text-overflow:ellipsis",
+					"border-bottom:1px solid #000000"
+				],
+				spanCss = [
+					"margin:0",
+					"padding:0",
+					"opacity:0.85",
+					"position:absolute",
+					"top:0",
+					"bottom:0",
+					"left:0",
+					"right:0"
+				],
+				makeinfoBar = function (first, middle, last, target) {
+					var firstEl = first ? document.createElement("EM") : null,
+						middleEl = document.createTextNode(middle),
+						lastEl = last ? document.createElement("EM") : null;
+					if (firstEl) {
+						firstEl.textContent = first;
+						firstEl.style.setProperty("font-style", "normal", "important");
+						firstEl.style.setProperty("color", "rgba(255,255,255,0.8)", "important");
+						target.appendChild(firstEl);
+					}
+					target.appendChild(middleEl);
+					if (lastEl) {
+						lastEl.textContent = last;
+						lastEl.style.setProperty("font-style", "normal", "important");
+						lastEl.style.setProperty("color", "rgba(255,255,255,0.8)", "important");
+						target.appendChild(lastEl);
+					}
+					return target;
+				};
+			return function (o, isIframe) {
+				var url = ytWatchBaseHref+o.videoId,
+					link = document.createElement("A"),
+					shield = document.createElement("SPAN"),
+					infoBar;
+				link.href = url;
+				link.title = (o.atitle ? o.atitle+" - "+o.videoId : url);
+				link.setAttribute(
+					"onmouseup",
+					"this.querySelector('span').style.setProperty('background-color','rgba(0,0,0,0.6)','important');"+
+						"this.querySelector('span').style.setProperty('opacity','1','important');"+
+						"this.querySelector('i').style.setProperty('background-color','rgb(0,0,0)','important');"
+					);
+				if (isIframe) {
+					infoBar = makeinfoBar(
+						(o.stats.time ? o.stats.time+"  " : ""),
+						link.title,
+						(o.stats.views ? " - "+o.stats.views : ""),
+						document.createElement("I")
+					);
+					link.title = infoBar.textContent;
+					link.target = iframesLinkTarget;
+					infoBar.setAttribute("style", bannerCss.concat([""]).join("!important;"));
+					shield.setAttribute("style", spanCss.concat([
+						"background:url('"+youtubeIcon+"') no-repeat scroll 50% 50% / 16% auto rgba(0,0,0,0.08)",
+						"bottom:25px",
+						""
+					]).join("!important;"));
+				} else {
+					link.target = nonIframesLinkTarget;
+					shield.setAttribute("style", spanCss.concat([
+						"background:url('"+youtubeIcon+"') no-repeat scroll 50% 50% / 16% auto rgba(0,0,0,0.08)",
+						"bottom:0",
+						""
+					]).join("!important;"));
 				}
-				/*compileBaseStyles(linkCss, o.after);*/
-				link.target = nonIframesLinkTarget;
-				linkCss = compileBaseStyles(linkCss, o.main).concat([
-					"float: "+(o.main.float||"none"),
-					"z-index: "+o.main.zIndex,
-					"vertical-align: "+o.main.verticalAlign,
-					"top: "+o.main.top,
-					"bottom: "+o.main.bottom,
-					"left: "+o.main.left,
-					"right: "+o.main.right,
-					"position: "+(o.main.position !== "absolute" ? "relative" : o.main.position),
-					"display: "+(!/^(?:block|none)$/.test(o.main.display) ? "inline-block" : o.main.display),
-					// Must have an actual size - default will assume a 16:9 resolution
-					"width: "+(o.main.width === "auto" || o.main.width === "0px" ? "320px" : o.main.width),
-					"height: "+(o.main.height === "auto" || o.main.height === "0px" ?
-						(o.main.width !== "auto" && o.main.width !== "0px" ? Math.ceil((parseInt(o.main.width, 10)/16)*9) : "180")+
-						"px" : o.main.height)
-				]);
-				spanCss = spanCss.concat([
-					"background: url('"+youtubeIcon+"') no-repeat scroll 50% 50% / 16% auto rgba(0,0,0,0.08)"
-				]);
-			}
-			spanCss = spanCss.concat([
-				"opacity: 0.85",
-				"position: absolute",
-				"top: 0",
-				"bottom: 0",
-				"left: 0",
-				"right: 0"
-			]);
-			// Remove falsy values
-			linkCss = linkCss.filter(function (s) { s = s.trim(); return !!s; });
-			link.style.cssText = linkCss.concat([""]).join(" !important; ");
-			span.style.cssText = spanCss.concat([""]).join(" !important; ");
-			if (banner) {
-				span.appendChild(banner);
-			} else {
-				span.innerHTML = "&nbsp;";
-			}
-			link.appendChild(span);
-			return link;
-		},
+				if (isIframe) {
+					link.setAttribute("style", linkCss.concat([
+						"background:url('https://i.ytimg.com/vi/"+o.videoId
+							+"/0.jpg')  no-repeat scroll 50% 50% / 133% auto transparent",
+						""
+					]).join("!important;"));
+					link.appendChild(shield);
+					link.appendChild(infoBar);
+				} else {
+					link.setAttribute("style", o.main.styles);
+					shield.innerHTML = "&nbsp;";
+					link.appendChild(shield);
+				}
+				return link;
+			};
+		}()),
 		linkClickHandler = function (event) {
 			var link = event.currentTarget;
 			if (link.nodeName === "A") {
@@ -373,40 +397,35 @@
 			linkHolder.setAttribute("hidden", true);
 			linkHolder.dataset.cyetoilPlaceholder = nowNum+"";
 			badElements.forEach(function (el) {
-				var computedStyle;
+				var content;
 				// This prevents collisions, and PARAMs inside OBJECTs from duplicating
 				if (loadedPatt.test(el.node.dataset.cyetoil+"")) return;
-				insertedObjectLinks += 1;
-				// Copy all (common) styles that the video has
-				computedStyle = window.getComputedStyle(el.node, "main");
-				el = makeStyles(el, computedStyle, "main");
-				// Skip pseudo styles if (not or) content is <none> - keep adding to the same object
-				computedStyle = window.getComputedStyle(el.node, ":before");
-				if (computedStyle.getPropertyValue("content") !== "none") {
-					el = makeStyles(el, computedStyle, ":before");
-					el.before.selector = "a[data-cyetoil='loaded"+nowNum+"'][data-cyetoil-uid='"+
-						insertedObjectLinks+"']:before";
+				replCounter += 1;
+				// Copy all styles that the original video element had
+				el = makeStyles(el, "main");
+				// Skip pseudo styles if (not or) content is <none>
+				if ((content=copyAllStyles(el.node, ":before", "content")) && content[1] !== "none") {
+					el = makeStyles(el, "before", [nowNum, replCounter]);
+					console.log(content, el.before.styleTagContent);
 				}
-				computedStyle = window.getComputedStyle(el.node, ":after");
-				if (computedStyle.getPropertyValue("content") !== "none") {
-					el = makeStyles(el, computedStyle, ":after");
-					el.after.selector = "a[data-cyetoil='loaded"+nowNum+"'][data-cyetoil-uid='"+
-						insertedObjectLinks+"']:after";
+				if ((content=copyAllStyles(el.node, ":after", "content")) && content[1] !== "none") {
+					el = makeStyles(el, "after", [nowNum, replCounter]);
 				}
 				videoLink = makeImageAnchor(el);
 				el.node.setAttribute("data-cyetoil", "loaded"+nowNum);
 				videoLink.setAttribute("data-cyetoil", "loaded"+nowNum);
-				el.node.setAttribute("data-cyetoil-uid", insertedObjectLinks+"org");
-				videoLink.setAttribute("data-cyetoil-uid", insertedObjectLinks+"");
+				el.node.setAttribute("data-cyetoil-uid", replCounter+"org");
+				videoLink.setAttribute("data-cyetoil-uid", replCounter+"");
 				videoLink.onmouseup = linkClickHandler;
 				// Dump in placeholder
 				linkHolder.appendChild(videoLink);
 			});
 			// Replace after collecting to preserve css styles
+			// Reason: Example: Removing any element causes rules such as :nth-of-type(x) to change
 			document.body.appendChild(linkHolder);
 			selector = "[data-cyetoil='loaded"+nowNum+"'][data-cyetoil-uid]";
 			makeArray(linkHolder.querySelectorAll(selector)).forEach(function (node) {
-				var moved = node.parentNode.removeChild(node),
+				var moved = node.parentNode.removeChild(node), // Remove AND copy it
 					old = document.querySelector("[data-cyetoil-uid='"+(moved.dataset.cyetoilUid)+"org']");
 				old.parentNode.replaceChild(moved, old);
 			});
@@ -414,7 +433,7 @@
 			linkHolder.parentNode.removeChild(linkHolder);
 		};
 	// Start
-	if (/^(?:(?:[a-zA-Z0-9\-]+\.)?youtube(?:\-nocookie)?\.com)$/.test(document.location.hostname)) {
+	if (youtubeDomainPatt.test(document.location.hostname)) {
 		if (top.window != self.window
 			&& (insideIframeId=(document.location.pathname+document.location.search).match(youtubeIdPatt)) !== null) {
 			// We're inside a Youtube IFRAME embed
@@ -472,7 +491,10 @@
 					"atitle": document.title.trim() /*.replace(/(?:\s|-)+Youtube$/i, "")*/
 				}, true);
 				iframeHtml = getIframeTmpl(document.title, insideIframeLink.outerHTML).join("");
-				document.location.replace("data:text/html;base64,"+window.btoa(iframeHtml));
+				// 2015-02-14 00:35 Removed base64 encoding which I used to safeguard the uri, but
+				// a bug in firefox makes it break for non ascii characters
+				// https://bugzilla.mozilla.org/show_bug.cgi?id=213047
+				document.location.replace("data:text/html;utf8,"+encodeURIComponent(iframeHtml));
 			}());
 		}
 	} else {
