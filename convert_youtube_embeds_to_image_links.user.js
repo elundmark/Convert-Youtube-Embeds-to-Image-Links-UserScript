@@ -2,8 +2,8 @@
 // @name         Convert Youtube Embeds to Image Links
 // @description  Tries to turn embedded Youtube videos into thumbnails - this is based on "Stop Overzealous Embedding" https://openuserjs.org/users/ConnorBehan
 // @namespace	 http://elundmark.se/code/
-// @version      0.1.8
-// @date         2015-02-08
+// @version      0.2.0
+// @date         2015-02-15
 // @autor        Erik Lundmark
 // @contact      mail@elundmark.se
 // @license      MIT; http://opensource.org/licenses/MIT
@@ -21,7 +21,7 @@
 /*
 	Example webpage(s)
 	--------------------------------------------------------------------------------------------------------
-	http://elundmark.se/_files/js/convert_youtube_embeds_to_image_links/cye2il-demo/
+	http://elundmark.se/_files/js/convert_youtube_embeds_to_image_links/demo/
 	http://terrillthompson.com/tests/youtube.html
 	http://www.rottentomatoes.com/m/tv_editorial/news/1931451/11_tv_shows_cancelled_after_the_first_episode/
 	--------------------------------------------------------------------------------------------------------
@@ -135,14 +135,17 @@
 			}
 			return parent;
 		},
-		validateStyleArray = (function () {
+		removeBackgroundRules = (function () {
 			var patt = /^(?:[\-_][a-zA-Z0-9]+[\-_])?background(?:$|\-)/;
 			return function (a) {
-				a = Array.isArray(a) && a[0] && a[1] ? a : null;
 				// Remove all -x-|background|-
-				return (a && !patt.test(a[0]));
+				return !patt.test(a[0]);
 			};
 		}()),
+		validateStyleArray = function (a) {
+			a = Array.isArray(a) && a[0] && a[1] ? a : null;
+			return !!a;
+		},
 		sortMultiArray = function (a, b) {
 			// Sort so vendor prefixes goes at the top
 			// www.w3.org/TR/CSS2/syndata.html - "An initial dash or underscore [...]"
@@ -172,8 +175,14 @@
 					}
 				}
 			}
-			styles = styles.filter(validateStyleArray).sort(sortMultiArray);
-			return property ? styles[0] : styles;
+			// Return single rule
+			if (property) return styles[0];
+			// Remove falsies
+			styles = styles.filter(validateStyleArray);
+			// Link has its own background, leave psuedo-selectors as they are though
+			if (!psuedoSelector) styles = styles.filter(removeBackgroundRules);
+			styles.sort(sortMultiArray);
+			return styles;
 		},
 		getDim = (function () {
 			var numPatt = /^\d+$/;
@@ -201,6 +210,8 @@
 					[
 						"background",
 						"url('https://i.ytimg.com/vi/"+o.videoId+"/0.jpg') no-repeat scroll 50% 50% / 133% auto transparent"
+						// 320x180 widescreen version
+						//"url('https://img.youtube.com/vi/"+o.videoId+"/mqdefault.jpg') no-repeat scroll 50% 50% / 100% 100% transparent"
 					]
 				]).map(function (a) {
 					// Must be able to set an absolute positioned SPAN inside it

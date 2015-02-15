@@ -11,34 +11,34 @@ You can find and install it from any of these repositories:
   - `http*://*.ytimg.com/*`
   - `http*://*.youtu.be/*`
   - `http*://youtu.be/*`
-  - Also note that no action is taken on Youtube's own website.
+* Note that no action is taken on Youtube's own website.
 
 # About
 
 * Replaces _all_ embedded Youtube videos with a simple thumbnail and link.
 * This userscript is based on [Stop Overzealous Embedding](https://openuserjs.org/scripts/ConnorBehan/Stop_Overzealous_Embedding) but is rewritten to instead change the _content_ of the iframe to a thumbnail and a link, which looks just like the video itself. This means it will keep the same CSS styling, provided it's an `iframe` element and not an `object` or `embed`.
-  - If it is an `object` or `embed` tag, they are replaced with a linked image, and _tries_ to look like the video by copying (most of) it's CSS styles.
+  - If it is an `object` or `embed` tag, they are replaced with a linked image, and _tries_ to look like the video by copying it's CSS styles. Have a look at the [demo](http://elundmark.se/_files/js/convert_youtube_embeds_to_image_links/demo/) if you'd like to know how it works.
 * All videolinks will open in the same window, but if the prefer it to open in a new tab you need to change `iframesLinkTarget` and/or `nonIframesLinkTarget` in the sourcecode to `"_blank"`.
+* `object` and `embed` tags are replaced in-page and monitored if any new are inserted dynamically. `iframe`s are replaced _from within the iframe window_ for security reasons, plus it works faster and takes up less resources.
 
-## Requires HTML5 support:
+# Updates
 
- * `iframe[srcdoc]` [#ref](https://developer.mozilla.org/en/docs/Web/HTML/Element/iframe)
- * `window.btoa` [#ref](https://developer.mozilla.org/en-US/docs/Web/API/WindowBase64.btoa)
+* _Require Secure Updates_ must be disabled to enable auto-updates, unless you install it from a source that rolls their own meta updates, like [monkeyguts.com](https://monkeyguts.com/).
 
-_Require Secure Updates_ must be disabled to enable auto-updates.
+# Development
+
+* Tested in Chromium 40 and Firefox 35.
+* I don't test any of my userscripts in Opera anymore, but it should work fine.
+* Requires no extra GM_ modules or external resources, just plain javascript.
+
+## Demo
+
+* After you've installed it, have a look at this demo and see what it will look like. This is the page which I test this script against most often, as it has all the weird user cases like ajaxed content, `<object>` and `<embed>` tags, custom css rules and `:after` + `:before` rules.
+* [http://elundmark.se/_files/js/convert_youtube_embeds_to_image_links/demo/](http://elundmark.se/_files/js/convert_youtube_embeds_to_image_links/demo/) ![screenshot of demo](http://elundmark.se/_files/js/convert_youtube_embeds_to_image_links/demo/screenshot.jpg "Screenshot of the demo page")
 
 **Original script and author** [Stop Overzealous Embedding](https://openuserjs.org/scripts/ConnorBehan/Stop_Overzealous_Embedding) by [Connor Behan](https://openuserjs.org/scripts/ConnorBehan/).
 
 **Script released under** [MIT License](http://opensource.org/licenses/MIT)
-
-**Icons by** [Pixel Bazaar](https://www.iconfinder.com/zlaten)
-
-# Demo
-
-* Remember, this demo needs the userscript installed to work!
-* [http://elundmark.se/_files/js/convert_youtube_embeds_to_image_links/cye2il-demo/](http://elundmark.se/_files/js/convert_youtube_embeds_to_image_links/cye2il-demo/)
-
-![screenshot of demo](http://elundmark.se/_files/js/convert_youtube_embeds_to_image_links/cye2il-demo/screenshot.png "Screenshot of the demo page")
 
 ### Copyright (c) 2014 Erik Lundmark <mail@elundmark.se>, openuserjs.org/scripts/ConnorBehan/
 
