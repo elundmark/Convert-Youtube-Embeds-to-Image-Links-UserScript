@@ -2,8 +2,8 @@
 // @name         Convert Youtube Embeds to Image Links
 // @description  Tries to turn embedded Youtube videos into thumbnails - this is based on "Stop Overzealous Embedding" https://openuserjs.org/users/ConnorBehan
 // @namespace	 http://elundmark.se/code/
-// @version      0.2.0
-// @date         2015-02-15
+// @version      0.2.1
+// @date         2015-02-21
 // @autor        Erik Lundmark
 // @contact      mail@elundmark.se
 // @license      MIT; http://opensource.org/licenses/MIT
@@ -451,6 +451,7 @@
 			(function () {
 				var iframeFlashvars = "",
 					iframeStats,
+					pageTitle = document.title,
 					insideIframeLink,
 					iframeHtml,
 					formatVideoLength = function (n, isMs) {
@@ -488,6 +489,7 @@
 						"time": iframeFlashvars.match(/flashvars=.+?length_seconds=(\d+)/)
 					};
 				}
+				console.log(document.body.innerHTML);
 				if (iframeStats.views) {
 					iframeStats.views = (iframeStats.views[1]
 						.replace(/^(\d+)(\d{3})(\d{3})$/, "$1.$2,$3")
@@ -496,12 +498,16 @@
 				if (iframeStats.time) {
 					iframeStats.time = formatVideoLength(iframeStats.time[1]);
 				}
+				if (!iframeStats.time && !iframeStats.views && document.querySelector("#player-unavailable")) {
+					// Private or removed video
+					pageTitle = "Private / Removed - YouTube";
+				}
 				insideIframeLink = makeImageAnchor({
 					"stats": iframeStats,
 					"videoId": insideIframeId[1],
-					"atitle": document.title.trim() /*.replace(/(?:\s|-)+Youtube$/i, "")*/
+					"atitle": pageTitle.trim() /*.replace(/(?:\s|-)+Youtube$/i, "")*/
 				}, true);
-				iframeHtml = getIframeTmpl(document.title, insideIframeLink.outerHTML).join("");
+				iframeHtml = getIframeTmpl(pageTitle, insideIframeLink.outerHTML).join("");
 				// 2015-02-14 00:35 Removed base64 encoding which I used to safeguard the uri, but
 				// a bug in firefox makes it break for non ascii characters
 				// https://bugzilla.mozilla.org/show_bug.cgi?id=213047
