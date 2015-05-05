@@ -2,8 +2,8 @@
 // @name         Convert Youtube Embeds to Image Links
 // @description  Tries to turn embedded Youtube videos into thumbnails - this is based on "Stop Overzealous Embedding" https://openuserjs.org/users/ConnorBehan
 // @namespace	 http://elundmark.se/code/
-// @version      0.2.1
-// @date         2015-02-21
+// @version      0.2.2
+// @date         2015-05-05
 // @autor        Erik Lundmark
 // @contact      mail@elundmark.se
 // @license      MIT; http://opensource.org/licenses/MIT
@@ -417,7 +417,7 @@
 				// Skip pseudo styles if (not or) content is <none>
 				if ((content=copyAllStyles(el.node, ":before", "content")) && content[1] !== "none") {
 					el = makeStyles(el, "before", [nowNum, replCounter]);
-					console.log(content, el.before.styleTagContent);
+					// console.log(content, el.before.styleTagContent);
 				}
 				if ((content=copyAllStyles(el.node, ":after", "content")) && content[1] !== "none") {
 					el = makeStyles(el, "after", [nowNum, replCounter]);
@@ -446,8 +446,10 @@
 	// Start
 	if (youtubeDomainPatt.test(document.location.hostname)) {
 		if (top.window != self.window
+			// Are we inside a Youtube IFRAME embed?
 			&& (insideIframeId=(document.location.pathname+document.location.search).match(youtubeIdPatt)) !== null) {
-			// We're inside a Youtube IFRAME embed
+			// 2015-05-05 Make sure we're not an iframe on youtube.com, it _can_ happen
+			try { if (top.window.document.domain === "www.youtube.com") return; } catch (err) {}
 			(function () {
 				var iframeFlashvars = "",
 					iframeStats,
@@ -489,7 +491,6 @@
 						"time": iframeFlashvars.match(/flashvars=.+?length_seconds=(\d+)/)
 					};
 				}
-				console.log(document.body.innerHTML);
 				if (iframeStats.views) {
 					iframeStats.views = (iframeStats.views[1]
 						.replace(/^(\d+)(\d{3})(\d{3})$/, "$1.$2,$3")
