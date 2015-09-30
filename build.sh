@@ -9,6 +9,9 @@ if [[ "$PWD" =~ convert_youtube_embeds_to_image_links$ ]] && [[ -f "$PASSM" ]]
 		local SSHURL=$(bash "$PASSM" "binero-ssh-url")
 		rsync --verbose --progress --stats --times --recursive --perms --delete --copy-links \
 			--exclude ".*" --exclude "build.sh" --exclude "*sublime*" -e ssh "$PWD/" \
+		"$SSHUSER""@""$SSHURL"":""$SSHHOME""/f.3r1k.se/public_html/js/convert_youtube_embeds_to_image_links/"
+		rsync --verbose --progress --stats --times --recursive --perms --delete --copy-links \
+			--exclude ".*" --exclude "build.sh" --exclude "*sublime*" -e ssh "$PWD/" \
 		"$SSHUSER""@""$SSHURL"":""$SSHHOME""/elundmark.se/public_html/_files/js/convert_youtube_embeds_to_image_links/"
 	}
 	gitCommit () {
