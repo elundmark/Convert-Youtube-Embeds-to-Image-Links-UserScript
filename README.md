@@ -6,12 +6,20 @@ You can find and install this from any of these repositories:
 * [https://openuserjs.org/scripts/elundmark/Convert_Youtube_Embeds_to_Image_Links](https://openuserjs.org/scripts/elundmark/Convert_Youtube_Embeds_to_Image_Links)
 * [https://greasyfork.org/en/scripts/7096-convert-youtube-embeds-to-image-links](https://greasyfork.org/en/scripts/7096-convert-youtube-embeds-to-image-links)
 
-## Applies to all websites
+## Applies to all urls
 
 * Except
-  - `http*://*.ytimg.com/*`
-  - `http*://*.youtu.be/*`
   - `http*://youtu.be/*`
+  - `http*://*.youtu.be/*`
+  - `http*://*.ytimg.com/*`
+  - `https://www.youtube.com/feed/*`
+  - `https://www.youtube.com/channel/*`
+  - `https://www.youtube.com/user/*`
+  - `https://www.youtube.com/watch?*`
+  - `https://www.youtube.com/playlist?*`
+  - `https://www.youtube.com/my_videos?*`
+  - `https://www.youtube.com/dashboard?*`
+  - `https://www.youtube.com/view_all_playlists*`
 
 ## About
 
