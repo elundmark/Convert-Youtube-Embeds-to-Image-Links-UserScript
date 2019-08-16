@@ -1,3 +1,5 @@
+# This project is no longer under active development
+
 # Convert Youtube Embeds to Image Links - userscript
 
 ## Install as UserScript
